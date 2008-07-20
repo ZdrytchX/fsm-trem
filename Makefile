@@ -18,22 +18,22 @@ ifeq ($(COMPILE_PLATFORM),darwin)
 endif
 
 ifndef BUILD_STANDALONE
-  BUILD_STANDALONE =
+  BUILD_STANDALONE = 0
 endif
 ifndef BUILD_CLIENT
-  BUILD_CLIENT     =
+  BUILD_CLIENT     = 1
 endif
 ifndef BUILD_CLIENT_SMP
-  BUILD_CLIENT_SMP =
+  BUILD_CLIENT_SMP = 0
 endif
 ifndef BUILD_SERVER
-  BUILD_SERVER     =
+  BUILD_SERVER     = 1
 endif
 ifndef BUILD_GAME_SO
-  BUILD_GAME_SO    =
+  BUILD_GAME_SO    = 0
 endif
 ifndef BUILD_GAME_QVM
-  BUILD_GAME_QVM   =
+  BUILD_GAME_QVM   = 0
 endif
 
 ifneq ($(PLATFORM),darwin)
@@ -773,22 +773,6 @@ ifneq ($(BUILD_CLIENT),0)
   endif
 endif
 
-ifneq ($(BUILD_GAME_SO),0)
-  TARGETS += \
-    $(B)/base/cgame$(ARCH).$(SHLIBEXT) \
-    $(B)/base/game$(ARCH).$(SHLIBEXT) \
-    $(B)/base/ui$(ARCH).$(SHLIBEXT)
-endif
-
-ifneq ($(BUILD_GAME_QVM),0)
-  ifneq ($(CROSS_COMPILING),1)
-    TARGETS += \
-      $(B)/base/vm/cgame.qvm \
-      $(B)/base/vm/game.qvm \
-      $(B)/base/vm/ui.qvm
-  endif
-endif
-
 ifeq ($(USE_MUMBLE),1)
   BASE_CFLAGS += -DUSE_MUMBLE
 endif
@@ -852,24 +836,6 @@ endif
 define DO_SHLIB_CC
 $(echo_cmd) "SHLIB_CC $<"
 $(Q)$(CC) $(CFLAGS) $(SHLIBCFLAGS) -o $@ -c $<
-$(Q)$(DO_QVM_DEP)
-endef
-
-define DO_GAME_CC
-$(echo_cmd) "GAME_CC $<"
-$(Q)$(CC) -DGAME $(CFLAGS) $(SHLIBCFLAGS) -o $@ -c $<
-$(Q)$(DO_QVM_DEP)
-endef
-
-define DO_CGAME_CC
-$(echo_cmd) "CGAME_CC $<"
-$(Q)$(CC) -DCGAME $(CFLAGS) $(SHLIBCFLAGS) -o $@ -c $<
-$(Q)$(DO_QVM_DEP)
-endef
-
-define DO_UI_CC
-$(echo_cmd) "UI_CC $<"
-$(Q)$(CC) -DUI $(CFLAGS) $(SHLIBCFLAGS) -o $@ -c $<
 $(Q)$(DO_QVM_DEP)
 endef
 
@@ -1437,136 +1403,6 @@ endif
 $(B)/tremded.$(ARCH)$(BINEXT): $(Q3DOBJ)
 	$(echo_cmd) "LD $@"
 	$(Q)$(CC) -o $@ $(Q3DOBJ) $(LDFLAGS)
-
-
-
-#############################################################################
-## TREMULOUS CGAME
-#############################################################################
-
-CGOBJ_ = \
-  $(B)/base/cgame/cg_main.o \
-  $(B)/base/cgame/bg_misc.o \
-  $(B)/base/cgame/bg_pmove.o \
-  $(B)/base/cgame/bg_slidemove.o \
-  $(B)/base/cgame/bg_lib.o \
-  $(B)/base/cgame/bg_alloc.o \
-  $(B)/base/cgame/bg_voice.o \
-  $(B)/base/cgame/cg_consolecmds.o \
-  $(B)/base/cgame/cg_buildable.o \
-  $(B)/base/cgame/cg_animation.o \
-  $(B)/base/cgame/cg_animmapobj.o \
-  $(B)/base/cgame/cg_draw.o \
-  $(B)/base/cgame/cg_drawtools.o \
-  $(B)/base/cgame/cg_ents.o \
-  $(B)/base/cgame/cg_event.o \
-  $(B)/base/cgame/cg_marks.o \
-  $(B)/base/cgame/cg_players.o \
-  $(B)/base/cgame/cg_playerstate.o \
-  $(B)/base/cgame/cg_predict.o \
-  $(B)/base/cgame/cg_servercmds.o \
-  $(B)/base/cgame/cg_snapshot.o \
-  $(B)/base/cgame/cg_view.o \
-  $(B)/base/cgame/cg_weapons.o \
-  $(B)/base/cgame/cg_scanner.o \
-  $(B)/base/cgame/cg_attachment.o \
-  $(B)/base/cgame/cg_trails.o \
-  $(B)/base/cgame/cg_particles.o \
-  $(B)/base/cgame/cg_ptr.o \
-  $(B)/base/cgame/cg_tutorial.o \
-  $(B)/base/ui/ui_shared.o \
-  \
-  $(B)/base/qcommon/q_math.o \
-  $(B)/base/qcommon/q_shared.o
-
-CGOBJ = $(CGOBJ_) $(B)/base/cgame/cg_syscalls.o
-CGVMOBJ = $(CGOBJ_:%.o=%.asm)
-
-$(B)/base/cgame$(ARCH).$(SHLIBEXT): $(CGOBJ)
-	$(echo_cmd) "LD $@"
-	$(Q)$(CC) $(SHLIBLDFLAGS) -o $@ $(CGOBJ)
-
-$(B)/base/vm/cgame.qvm: $(CGVMOBJ) $(CGDIR)/cg_syscalls.asm $(Q3ASM)
-	$(echo_cmd) "Q3ASM $@"
-	$(Q)$(Q3ASM) -o $@ $(CGVMOBJ) $(CGDIR)/cg_syscalls.asm
-
-
-
-#############################################################################
-## TREMULOUS GAME
-#############################################################################
-
-GOBJ_ = \
-  $(B)/base/game/g_main.o \
-  $(B)/base/game/bg_misc.o \
-  $(B)/base/game/bg_pmove.o \
-  $(B)/base/game/bg_slidemove.o \
-  $(B)/base/game/bg_lib.o \
-  $(B)/base/game/bg_alloc.o \
-  $(B)/base/game/bg_voice.o \
-  $(B)/base/game/g_active.o \
-  $(B)/base/game/g_client.o \
-  $(B)/base/game/g_cmds.o \
-  $(B)/base/game/g_combat.o \
-  $(B)/base/game/g_physics.o \
-  $(B)/base/game/g_buildable.o \
-  $(B)/base/game/g_misc.o \
-  $(B)/base/game/g_missile.o \
-  $(B)/base/game/g_mover.o \
-  $(B)/base/game/g_session.o \
-  $(B)/base/game/g_spawn.o \
-  $(B)/base/game/g_svcmds.o \
-  $(B)/base/game/g_target.o \
-  $(B)/base/game/g_team.o \
-  $(B)/base/game/g_trigger.o \
-  $(B)/base/game/g_utils.o \
-  $(B)/base/game/g_maprotation.o \
-  $(B)/base/game/g_ptr.o \
-  $(B)/base/game/g_weapon.o \
-  $(B)/base/game/g_admin.o \
-  \
-  $(B)/base/qcommon/q_math.o \
-  $(B)/base/qcommon/q_shared.o
-
-GOBJ = $(GOBJ_) $(B)/base/game/g_syscalls.o
-GVMOBJ = $(GOBJ_:%.o=%.asm)
-
-$(B)/base/game$(ARCH).$(SHLIBEXT): $(GOBJ)
-	$(echo_cmd) "LD $@"
-	$(Q)$(CC) $(SHLIBLDFLAGS) -o $@ $(GOBJ)
-
-$(B)/base/vm/game.qvm: $(GVMOBJ) $(GDIR)/g_syscalls.asm $(Q3ASM)
-	$(echo_cmd) "Q3ASM $@"
-	$(Q)$(Q3ASM) -o $@ $(GVMOBJ) $(GDIR)/g_syscalls.asm
-
-
-
-#############################################################################
-## TREMULOUS UI
-#############################################################################
-
-UIOBJ_ = \
-  $(B)/base/ui/ui_main.o \
-  $(B)/base/ui/ui_atoms.o \
-  $(B)/base/ui/ui_shared.o \
-  $(B)/base/ui/ui_gameinfo.o \
-  \
-  $(B)/base/ui/bg_misc.o \
-  $(B)/base/ui/bg_lib.o \
-  $(B)/base/qcommon/q_math.o \
-  $(B)/base/qcommon/q_shared.o
-
-UIOBJ = $(UIOBJ_) $(B)/base/ui/ui_syscalls.o
-UIVMOBJ = $(UIOBJ_:%.o=%.asm)
-
-$(B)/base/ui$(ARCH).$(SHLIBEXT): $(UIOBJ)
-	$(echo_cmd) "LD $@"
-	$(Q)$(CC) $(CFLAGS) $(SHLIBLDFLAGS) -o $@ $(UIOBJ)
-
-$(B)/base/vm/ui.qvm: $(UIVMOBJ) $(UIDIR)/ui_syscalls.asm $(Q3ASM)
-	$(echo_cmd) "Q3ASM $@"
-	$(Q)$(Q3ASM) -o $@ $(UIVMOBJ) $(UIDIR)/ui_syscalls.asm
-
 
 
 #############################################################################
