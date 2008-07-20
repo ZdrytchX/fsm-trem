@@ -50,6 +50,11 @@ endif
 #############################################################################
 -include Makefile.local
 
+# the libs and qvms don't compile without their own backporting, so just
+# disable them entirely
+BUILD_GAME_SO  = 0
+BUILD_GAME_QVM = 0
+
 ifndef PLATFORM
 PLATFORM=$(COMPILE_PLATFORM)
 endif

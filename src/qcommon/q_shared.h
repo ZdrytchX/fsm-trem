@@ -953,6 +953,7 @@ typedef struct {
 // if none of the catchers are active, bound key strings will be executed
 #define KEYCATCH_CONSOLE		0x0001
 #define	KEYCATCH_UI					0x0002
+#define	KEYCATCH_MESSAGE		0x0004
 #define	KEYCATCH_CGAME			0x0008
 
 
@@ -1070,8 +1071,6 @@ typedef struct playerState_s {
 	int			torsoTimer;		// don't change low priority animations until this runs out
 	int			torsoAnim;		// mask off ANIM_TOGGLEBIT
 
-	int			weaponAnim;		// mask off ANIM_TOGGLEBIT
-
 	int			movementDir;	// a number 0 to 7 that represents the reletive angle
 								// of movement to the view angle (axial and diagonals)
 								// when at rest, the value will remain unchanged
@@ -1104,9 +1103,8 @@ typedef struct playerState_s {
 
 	int			stats[MAX_STATS];
 	int			persistant[MAX_PERSISTANT];	// stats that aren't cleared on death
-	int			misc[MAX_MISC];	// misc data
-	int			ammo;			// ammo held
-	int			clips;			// clips held
+	int			misc[MAX_MISC];	// level.time that the powerup runs out
+	int			ammo[MAX_WEAPONS];
 
 	int			generic1;
 	int			loopSound;
@@ -1228,7 +1226,6 @@ typedef struct entityState_s {
 	int		weapon;			// determines weapon and flash model, etc
 	int		legsAnim;		// mask off ANIM_TOGGLEBIT
 	int		torsoAnim;		// mask off ANIM_TOGGLEBIT
-	int		weaponAnim;		// mask off ANIM_TOGGLEBIT
 
 	int		generic1;
 } entityState_t;
@@ -1296,9 +1293,9 @@ typedef struct qtime_s {
 
 // server browser sources
 // AS_MPLAYER is no longer used
-#define AS_GLOBAL			0
+#define AS_GLOBAL			2
 #define AS_MPLAYER		1
-#define AS_LOCAL			2
+#define AS_LOCAL			0
 #define AS_FAVORITES	3
 
 
