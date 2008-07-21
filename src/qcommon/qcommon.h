@@ -423,6 +423,7 @@ char	*Cmd_Cmd (void);
 
 void	Cmd_TokenizeString( const char *text );
 void	Cmd_TokenizeStringIgnoreQuotes( const char *text_in );
+void	Cmd_TokenizeStringParseCvar( const char *text_in );
 // Takes a null terminated string.  Does not need to be /n terminated.
 // breaks the string up into arg tokens.
 
@@ -479,6 +480,7 @@ void Cvar_SetLatched( const char *var_name, const char *value);
 // don't set the cvar immediately
 
 void	Cvar_SetValue( const char *var_name, float value );
+void	Cvar_SetValueSafe( const char *var_name, float value );
 // expands value to a string and calls Cvar_Set
 
 float	Cvar_VariableValue( const char *var_name );
