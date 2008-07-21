@@ -110,6 +110,12 @@ refexport_t	re;
 
 ping_t	cl_pinglist[MAX_PINGREQUESTS];
 
+typedef enum {
+	SVSTAT_WARN_NONE = 0,
+	SVSTAT_WARN_TIMEINFO,
+	SVSTAT_WARN_COUNT	/* used for count of warn types */
+} serverStatusWarning_t;
+
 typedef struct serverStatus_s
 {
 	char string[BIG_INFO_STRING];
@@ -118,6 +124,7 @@ typedef struct serverStatus_s
 	qboolean pending;
 	qboolean print;
 	qboolean retrieved;
+	serverStatusWarning_t warn;
 } serverStatus_t;
 
 serverStatus_t cl_serverStatusList[MAX_SERVERSTATUSREQUESTS];
@@ -131,6 +138,7 @@ extern void SV_BotFrame( int time );
 void CL_CheckForResend( void );
 void CL_ShowIP_f(void);
 void CL_ServerStatus_f(void);
+void CL_ServerStatusWarnTimeInfo_f(void);
 void CL_ServerStatusResponse( netadr_t from, msg_t *msg );
 
 /*
@@ -3093,6 +3101,7 @@ void CL_Init( void ) {
 	Cmd_AddCommand ("setenv", CL_Setenv_f );
 	Cmd_AddCommand ("ping", CL_Ping_f );
 	Cmd_AddCommand ("serverstatus", CL_ServerStatus_f );
+	Cmd_AddCommand ("warntime", CL_ServerStatusWarnTimeInfo_f );
 	Cmd_AddCommand ("showip", CL_ShowIP_f );
 	Cmd_AddCommand ("fs_openedList", CL_OpenedPK3List_f );
 	Cmd_AddCommand ("fs_referencedList", CL_ReferencedPK3List_f );
@@ -3419,10 +3428,11 @@ CL_ServerStatusResponse
 ===================
 */
 void CL_ServerStatusResponse( netadr_t from, msg_t *msg ) {
-	char	*s;
+	char	*s, *s_begin;
 	char	info[MAX_INFO_STRING];
 	int		i, l, score, ping;
 	int		len;
+	qboolean	print_text;
 	serverStatus_t *serverStatus;
 
 	serverStatus = NULL;
@@ -3438,11 +3448,90 @@ void CL_ServerStatusResponse( netadr_t from, msg_t *msg ) {
 	}
 
 	s = MSG_ReadStringLine( msg );
+	
+	s_begin = s;
+	print_text = serverStatus->print;
+
+	if (serverStatus->warn != SVSTAT_WARN_NONE) {
+		char	buffer[MAX_STRING_CHARS];
+		char	value[MAX_INFO_STRING];
+		int	inf_limit;
+		int	inf_sd;
+		int	inf_sdtime;
+
+		inf_limit = 0;
+		inf_sd = 0;
+		inf_sdtime = 0;
+
+		while (*s) {
+			l = 0;
+			if (*s == '\\')	s++;
+			while (*s) {
+				info[l++] = *s;
+				if (l >= MAX_INFO_STRING-1)
+					break;
+				s++;
+				if (*s == '\\') {
+					break;
+				}
+			}
+			info[l] = '\0';
+
+			l = 0;
+			if (*s == '\\')	s++;
+			while (*s) {
+				value[l++] = *s;
+				if (l >= MAX_INFO_STRING-1)
+					break;
+				s++;
+				if (*s == '\\') {
+					break;
+				}
+			}	
+			value[l] = '\0';
+
+			if (strcasecmp(info, "timelimit") == 0) {
+				inf_limit = atoi(value);
+			} else if (strcasecmp(info, "g_suddenDeath") == 0) {
+				inf_sd = atoi(value);
+			} else if (strcasecmp(info, "g_suddenDeathTime") == 0) {
+				inf_sdtime = atoi(value);
+			}
+		}
+
+		buffer[0] = '\0';
+		switch (serverStatus->warn) {
+			case SVSTAT_WARN_TIMEINFO:
+				{
+				char sdtext[64];
+
+				Com_sprintf( sdtext, sizeof( sdtext ), "%d:00", inf_sdtime );
+				Com_sprintf( buffer, sizeof( buffer ),
+					    "say \"^3Current time: ^1%d:%02d^7, ^3time limit: ^1%d:00%s^7, ^3sudden death: ^1%s\"\n",
+					    cl.serverTime / 60000, (cl.serverTime / 1000) % 60, inf_limit,
+					    (inf_limit > 55) ? " ^5(extended)" : "",
+					    (inf_sd == 1 || inf_sdtime <= cl.serverTime / 60000) ? "ACTIVE" : sdtext);
+				break;
+				}
+			default:
+				/* should not reach this */
+				break;
+		}
+
+		if (strlen(buffer) > 0) {
+			CL_AddReliableCommand( buffer );
+		}
+
+		serverStatus->warn = SVSTAT_WARN_NONE;
+		print_text = qfalse;
+	}
+
+	s = s_begin;
 
 	len = 0;
 	Com_sprintf(&serverStatus->string[len], sizeof(serverStatus->string)-len, "%s", s);
 
-	if (serverStatus->print) {
+	if (print_text) {
 		Com_Printf("Server settings:\n");
 		// print cvars
 		while (*s) {
@@ -3473,7 +3562,7 @@ void CL_ServerStatusResponse( netadr_t from, msg_t *msg ) {
 	len = strlen(serverStatus->string);
 	Com_sprintf(&serverStatus->string[len], sizeof(serverStatus->string)-len, "\\");
 
-	if (serverStatus->print) {
+	if (print_text) {
 		Com_Printf("\nPlayers:\n");
 		Com_Printf("num: score: ping: name:\n");
 	}
@@ -3482,7 +3571,7 @@ void CL_ServerStatusResponse( netadr_t from, msg_t *msg ) {
 		len = strlen(serverStatus->string);
 		Com_sprintf(&serverStatus->string[len], sizeof(serverStatus->string)-len, "\\%s", s);
 
-		if (serverStatus->print) {
+		if (print_text) {
 			score = ping = 0;
 			sscanf(s, "%d %d", &score, &ping);
 			s = strchr(s, ' ');
@@ -3934,7 +4023,7 @@ qboolean CL_UpdateVisiblePings_f(int source) {
 CL_ServerStatus_f
 ==================
 */
-void CL_ServerStatus_f(void) {
+static void CL_ServerStatus_f_real( serverStatusWarning_t warn ) {
 	netadr_t	to, *toptr = NULL;
 	char		*server;
 	serverStatus_t *serverStatus;
@@ -3984,6 +4073,15 @@ void CL_ServerStatus_f(void) {
 	serverStatus->address = *toptr;
 	serverStatus->print = qtrue;
 	serverStatus->pending = qtrue;
+	serverStatus->warn = warn;
+}
+
+void CL_ServerStatus_f(void) {
+	CL_ServerStatus_f_real( SVSTAT_WARN_NONE );
+}
+
+void CL_ServerStatusWarnTimeInfo_f(void) {
+	CL_ServerStatus_f_real( SVSTAT_WARN_TIMEINFO );
 }
 
 /*
