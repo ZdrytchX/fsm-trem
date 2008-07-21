@@ -190,15 +190,12 @@ static void GLimp_DetectAvailableModes(void)
 	}
 }
 
-#define R_FAILSAFE_WIDTH  640
-#define R_FAILSAFE_HEIGHT 480
-
 /*
 ===============
 GLimp_SetMode
 ===============
 */
-static int GLimp_SetMode( qboolean failSafe, qboolean fullscreen )
+static int GLimp_SetMode( int mode, qboolean fullscreen )
 {
 	const char*   glstring;
 	int sdlcolorbits;
@@ -229,27 +226,14 @@ static int GLimp_SetMode( qboolean failSafe, qboolean fullscreen )
 		ri.Printf( PRINT_ALL, "Estimated display aspect: %.3f\n", glConfig.displayAspect );
 	}
 
-	if( !failSafe )
-	{
-		glConfig.vidWidth = r_width->integer;
-		glConfig.vidHeight = r_height->integer;
-		glConfig.windowAspect = r_width->value /
-			( r_height->value * r_pixelAspect->value );
-	}
-	else if( glConfig.vidWidth != R_FAILSAFE_WIDTH &&
-			glConfig.vidHeight != R_FAILSAFE_HEIGHT )
-	{
-		ri.Printf( PRINT_ALL, "Setting mode %dx%d failed, falling back on mode %dx%d\n",
-			glConfig.vidWidth, glConfig.vidHeight, R_FAILSAFE_WIDTH, R_FAILSAFE_HEIGHT );
+	ri.Printf (PRINT_ALL, "...setting mode %d:", mode );
 
-		glConfig.vidWidth = R_FAILSAFE_WIDTH;
-		glConfig.vidHeight = R_FAILSAFE_HEIGHT;
-		glConfig.windowAspect = 1.0f;
-	}
-	else
+	if ( !R_GetModeInfo( &glConfig.vidWidth, &glConfig.vidHeight, &glConfig.windowAspect, mode ) )
+	{
+		ri.Printf( PRINT_ALL, " invalid mode\n" );
 		return RSERR_INVALID_MODE;
-
-	ri.Printf (PRINT_ALL, "...setting mode %dx%d\n", glConfig.vidWidth, glConfig.vidHeight);
+	}
+	ri.Printf( PRINT_ALL, " %d %d\n", glConfig.vidWidth, glConfig.vidHeight);
 
 	if (fullscreen)
 	{
@@ -425,7 +409,7 @@ static int GLimp_SetMode( qboolean failSafe, qboolean fullscreen )
 GLimp_StartDriverAndSetMode
 ===============
 */
-static qboolean GLimp_StartDriverAndSetMode( qboolean failSafe, qboolean fullscreen )
+static qboolean GLimp_StartDriverAndSetMode( int mode, qboolean fullscreen )
 {
 	rserr_t err;
 
@@ -448,7 +432,7 @@ static qboolean GLimp_StartDriverAndSetMode( qboolean failSafe, qboolean fullscr
 		fullscreen = qfalse;
 	}
 
-	err = GLimp_SetMode( failSafe, fullscreen );
+	err = GLimp_SetMode( mode, fullscreen );
 
 	switch ( err )
 	{
@@ -456,7 +440,7 @@ static qboolean GLimp_StartDriverAndSetMode( qboolean failSafe, qboolean fullscr
 			ri.Printf( PRINT_ALL, "...WARNING: fullscreen unavailable in this mode\n" );
 			return qfalse;
 		case RSERR_INVALID_MODE:
-			ri.Printf( PRINT_ALL, "...WARNING: could not set the given mode\n" );
+			ri.Printf( PRINT_ALL, "...WARNING: could not set the given mode (%d)\n", mode );
 			return qfalse;
 		default:
 			break;
@@ -642,6 +626,8 @@ static void GLimp_InitExtensions( void )
 	}
 }
 
+#define R_MODE_FALLBACK 3 // 640 * 480
+
 /*
 ===============
 GLimp_Init
@@ -657,9 +643,16 @@ void GLimp_Init( void )
 	r_allowSoftwareGL = ri.Cvar_Get( "r_allowSoftwareGL", "0", CVAR_LATCH );
 
 	// create the window and set up the context
-	if( !GLimp_StartDriverAndSetMode( qfalse, r_fullscreen->integer ) )
+	if( !GLimp_StartDriverAndSetMode( r_mode->integer, r_fullscreen->integer ) )
 	{
-		if( !GLimp_StartDriverAndSetMode( qtrue, r_fullscreen->integer ) )
+		if( r_mode->integer != R_MODE_FALLBACK )
+		{
+			ri.Printf( PRINT_ALL, "Setting r_mode %d failed, falling back on r_mode %d\n",
+					r_mode->integer, R_MODE_FALLBACK );
+			if( !GLimp_StartDriverAndSetMode( R_MODE_FALLBACK, r_fullscreen->integer ) )
+				success = qfalse;
+		}
+		else
 			success = qfalse;
 	}
 

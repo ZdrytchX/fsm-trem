@@ -264,7 +264,6 @@ static void IN_ActivateMouse( void )
 			{
 				if(IOHIDGetAccelerationWithKey(mouseDev, CFSTR(kIOHIDMouseAccelerationType), &originalMouseSpeed) == kIOReturnSuccess)
 				{
-					Com_Printf("previous mouse acceleration: %f\n", originalMouseSpeed);
 					if(IOHIDSetAccelerationWithKey(mouseDev, CFSTR(kIOHIDMouseAccelerationType), -1.0) != kIOReturnSuccess)
 					{
 						Com_Printf("Could not disable mouse acceleration (failed at IOHIDSetAccelerationWithKey).\n");
@@ -653,7 +652,6 @@ static void IN_ProcessEvents( void )
 	SDL_Event e;
 	const char *p = NULL;
 	int key = 0;
-	int mx = 0, my = 0;
 
 	if( !SDL_WasInit( SDL_INIT_VIDEO ) )
 			return;
@@ -695,8 +693,7 @@ static void IN_ProcessEvents( void )
 			case SDL_MOUSEMOTION:
 				if (mouseActive)
 				{
-					mx += e.motion.xrel;
-					my += e.motion.yrel;
+					Com_QueueEvent( 0, SE_MOUSE, e.motion.xrel, e.motion.yrel, 0, NULL );
 				}
 				break;
 
@@ -720,15 +717,6 @@ static void IN_ProcessEvents( void )
 				}
 				break;
 
-			case SDL_ACTIVEEVENT:
-				if( e.active.state == SDL_APPINPUTFOCUS ) {
-					if( e.active.gain )
-						IN_ActivateMouse();
-					else
-						IN_DeactivateMouse();
-				}
-				break;
-
 			case SDL_QUIT:
 				Sys_Quit();
 				break;
@@ -737,9 +725,6 @@ static void IN_ProcessEvents( void )
 				break;
 		}
 	}
-
-	if(mx || my)
-		Com_QueueEvent( 0, SE_MOUSE, mx, my, 0, NULL );
 }
 
 /*
