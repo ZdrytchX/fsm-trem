@@ -28,14 +28,15 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // A user mod should never modify this file
 
 #define PRODUCT_NAME            "tremulous"
+#define CODENAME                "Detonator"
 
 #ifdef _MSC_VER
 # define PRODUCT_VERSION          "1.1.0"
 #endif
 
-#define CLIENT_WINDOW_TITLE       "Tremulous " PRODUCT_VERSION
-#define CLIENT_WINDOW_MIN_TITLE   "Tremulous"
-#define Q3_VERSION                 PRODUCT_NAME " " PRODUCT_VERSION
+#define CLIENT_WINDOW_TITLE       "FSM-Tremulous" " '" CODENAME "' "
+#define CLIENT_WINDOW_MIN_TITLE   "FSM-Tremulous"
+#define Q3_VERSION                 PRODUCT_NAME " '" CODENAME "' " PRODUCT_VERSION
 
 #define MAX_TEAMNAME 32
 
