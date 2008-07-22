@@ -99,20 +99,20 @@ if [ -d /Developer/SDKs/MacOSX10.3.9.sdk ] && [ $TIGERHOST ]; then
 	PPC_SERVER_LDFLAGS=$PPC_CLIENT_LDFLAGS
 fi
 
-if [ -d /Developer/SDKs/MacOSX10.2.8.sdk ] && [ -x /usr/bin/gcc-3.3 ] && [ $TIGERHOST ]; then
-	PPC_CLIENT_SDK=/Developer/SDKs/MacOSX10.2.8.sdk
-	PPC_CLIENT_CC=gcc-3.3
-	PPC_CLIENT_CFLAGS="-arch ppc \
-		-nostdinc \
-		-F/Developer/SDKs/MacOSX10.2.8.sdk/System/Library/Frameworks \
-		-I/Developer/SDKs/MacOSX10.2.8.sdk/usr/include/gcc/darwin/3.3 \
-		-isystem /Developer/SDKs/MacOSX10.2.8.sdk/usr/include \
-		-DMAC_OS_X_VERSION_MIN_REQUIRED=1020"
-	PPC_CLIENT_LDFLAGS="-arch ppc \
-		-L/Developer/SDKs/MacOSX10.2.8.sdk/usr/lib/gcc/darwin/3.3 \
-		-F/Developer/SDKs/MacOSX10.2.8.sdk/System/Library/Frameworks \
-		-Wl,-syslibroot,/Developer/SDKs/MacOSX10.2.8.sdk,-m"
-fi
+#if [ -d /Developer/SDKs/MacOSX10.2.8.sdk ] && [ -x /usr/bin/gcc-3.3 ] && [ $TIGERHOST ]; then
+#	PPC_CLIENT_SDK=/Developer/SDKs/MacOSX10.2.8.sdk
+#	PPC_CLIENT_CC=gcc-3.3
+#	PPC_CLIENT_CFLAGS="-arch ppc \
+#		-nostdinc \
+#		-F/Developer/SDKs/MacOSX10.2.8.sdk/System/Library/Frameworks \
+#		-I/Developer/SDKs/MacOSX10.2.8.sdk/usr/include/gcc/darwin/3.3 \
+#		-isystem /Developer/SDKs/MacOSX10.2.8.sdk/usr/include \
+#		-DMAC_OS_X_VERSION_MIN_REQUIRED=1020"
+#	PPC_CLIENT_LDFLAGS="-arch ppc \
+#		-L/Developer/SDKs/MacOSX10.2.8.sdk/usr/lib/gcc/darwin/3.3 \
+#		-F/Developer/SDKs/MacOSX10.2.8.sdk/System/Library/Frameworks \
+#		-Wl,-syslibroot,/Developer/SDKs/MacOSX10.2.8.sdk,-m"
+#fi
 
 echo "Building PPC Dedicated Server against \"$PPC_SERVER_SDK\""
 echo "Building PPC Client against \"$PPC_CLIENT_SDK\""
