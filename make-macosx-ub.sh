@@ -6,7 +6,6 @@ PKGINFO=APPLTREM
 ICNS=misc/Tremulous.icns
 DESTDIR=build/release-darwin-ub
 BASEDIR=base
-Q3_VERSION=`grep '^VERSION=' Makefile | sed -e 's/.*=\(.*\)/\1/'`
 
 BIN_OBJ="
 	build/release-darwin-ppc/tremulous.ppc
@@ -24,9 +23,14 @@ BASE_OBJ="
 	build/release-darwin-ppc/$BASEDIR/gameppc.dylib
 	build/release-darwin-x86/$BASEDIR/gamex86.dylib
 "
+
+cd `dirname $0`
 if [ ! -f Makefile ]; then
 	echo "This script must be run from the Tremulous build directory";
+	exit 1
 fi
+
+Q3_VERSION=`grep '^VERSION=' Makefile | sed -e 's/.*=\(.*\)/\1/'`
 
 # We only care if we're >= 10.4, not if we're specifically Tiger.
 # "8" is the Darwin major kernel version.
@@ -99,34 +103,6 @@ if [ -d /Developer/SDKs/MacOSX10.3.9.sdk ] && [ $TIGERHOST ]; then
 	PPC_SERVER_LDFLAGS=$PPC_CLIENT_LDFLAGS
 fi
 
-#if [ -d /Developer/SDKs/MacOSX10.2.8.sdk ] && [ -x /usr/bin/gcc-3.3 ] && [ $TIGERHOST ]; then
-#	PPC_CLIENT_SDK=/Developer/SDKs/MacOSX10.2.8.sdk
-#	PPC_CLIENT_CC=gcc-3.3
-#	PPC_CLIENT_CFLAGS="-arch ppc \
-#		-nostdinc \
-#		-F/Developer/SDKs/MacOSX10.2.8.sdk/System/Library/Frameworks \
-#		-I/Developer/SDKs/MacOSX10.2.8.sdk/usr/include/gcc/darwin/3.3 \
-#		-isystem /Developer/SDKs/MacOSX10.2.8.sdk/usr/include \
-#		-DMAC_OS_X_VERSION_MIN_REQUIRED=1020"
-#	PPC_CLIENT_LDFLAGS="-arch ppc \
-#		-L/Developer/SDKs/MacOSX10.2.8.sdk/usr/lib/gcc/darwin/3.3 \
-#		-F/Developer/SDKs/MacOSX10.2.8.sdk/System/Library/Frameworks \
-#		-Wl,-syslibroot,/Developer/SDKs/MacOSX10.2.8.sdk,-m"
-#fi
-
-echo "Building PPC Dedicated Server against \"$PPC_SERVER_SDK\""
-echo "Building PPC Client against \"$PPC_CLIENT_SDK\""
-echo "Building X86 Client/Dedicated Server against \"$X86_SDK\""
-if [ "$PPC_CLIENT_SDK" != "/Developer/SDKs/MacOSX10.2.8.sdk" ] || \
-	[ "$PPC_SERVER_SDK" != "/Developer/SDKs/MacOSX10.3.9.sdk" ] || \
-	[ "$X86_SDK" != "/Developer/SDKs/MacOSX10.4u.sdk" ]; then
-	echo "\
-WARNING: in order to build a binary with maximum compatibility you must
-         build on Mac OS X 10.4 using Xcode 2.3 or 2.5 and have the
-         MacOSX10.2.8, MacOSX10.3.9, and MacOSX10.4u SDKs installed
-         from the Xcode install disk Packages folder."
-fi
-
 if [ -z $PPC_CLIENT_SDK ] || [ -z $PPC_SERVER_SDK ] || [ -z $X86_SDK ]; then
 	echo "\
 ERROR: This script is for building a Universal Binary.  You cannot build
@@ -134,6 +110,18 @@ ERROR: This script is for building a Universal Binary.  You cannot build
        installed.  If you just want to to compile for your own system run
        'make' instead of this script."
 	exit 1
+fi
+
+echo "Building PPC Dedicated Server against \"$PPC_SERVER_SDK\""
+echo "Building PPC Client against \"$PPC_CLIENT_SDK\""
+echo "Building X86 Client/Dedicated Server against \"$X86_SDK\""
+if [ "$PPC_SERVER_SDK" != "/Developer/SDKs/MacOSX10.3.9.sdk" ] || \
+	[ "$X86_SDK" != "/Developer/SDKs/MacOSX10.4u.sdk" ]; then
+	echo "\
+WARNING: in order to build a binary with maximum compatibility you must
+         build on Mac OS X 10.4 using Xcode 2.3 or 2.5 
+         and have the  MacOSX10.3.9 and MacOSX10.4u SDKs installed
+         from the Xcode install disk Packages folder."
 fi
 sleep 3
 
