@@ -38,6 +38,7 @@ field_t		g_consoleField;
 field_t		chatField;
 qboolean	chat_team;
 qboolean	chat_admins;
+qboolean	chat_clans;
 
 int			chat_playerNum;
 
@@ -742,7 +743,20 @@ void Message_Key( int key ) {
 
 				Com_sprintf( buffer, sizeof( buffer ), "say_admins \"%s\"\n", chatField.buffer );
 
-			else
+			else if (chat_clans) {
+				char clantagDecolored[ 32 ];
+				Com_DecolorString(clantag->string, clantagDecolored, sizeof( clantagDecolored ) );
+
+				if( strlen(clantagDecolored) > 2 && strlen(clantagDecolored) < 11 ) {
+					Com_sprintf( buffer, sizeof( buffer ), "m \"%s\" \"%s\"\n", clantagDecolored, chatField.buffer );
+				} else {
+					//string isnt long enough
+					Com_Printf ( "^3Error:your clantag has to be Between 3 and 10 chars long. current value is:^7 %s^7\n", clantagDecolored );
+					Key_SetCatcher( Key_GetCatcher( ) & ~KEYCATCH_MESSAGE );
+					Field_Clear( &chatField );
+					return;
+				}
+			} else
 				Com_sprintf( buffer, sizeof( buffer ), "say \"%s\"\n", chatField.buffer );
 
 			CL_AddReliableCommand( buffer );

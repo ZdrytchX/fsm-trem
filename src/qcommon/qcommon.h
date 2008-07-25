@@ -755,11 +755,13 @@ typedef struct {
 } sysEvent_t;
 
 void		Com_QueueEvent( int time, sysEventType_t type, int value, int value2, int ptrLength, void *ptr );
-int			Com_EventLoop( void );
+int		Com_EventLoop( void );
 sysEvent_t	Com_GetSystemEvent( void );
 
 char		*CopyString( const char *in );
 void		Info_Print( const char *s );
+//decolor string
+void		Com_DecolorString( char *in, char *out, int maxlen );
 
 void		Com_BeginRedirect (char *buffer, int buffersize, void (*flush)(char *));
 void		Com_EndRedirect( void );

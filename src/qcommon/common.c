@@ -3248,3 +3248,19 @@ void Com_RandomBytes( byte *string, int len )
 		string[i] = (unsigned char)( rand() % 255 );
 }
 
+void Com_DecolorString( char *in, char *out, int maxlen )
+{
+	int curlen = 0;
+	while( *in ) {
+		if( *in == 27 || *in == '^' ) {
+			in++;
+		if( *in )
+			in++;
+			continue;
+		}
+		*out++ = *in++;
+		curlen++;
+		if( curlen > maxlen ) break;
+	}
+	*out = '\0';
+}

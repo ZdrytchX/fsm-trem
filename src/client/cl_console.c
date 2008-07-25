@@ -89,6 +89,7 @@ void Con_MessageMode_f (void) {
 	chat_playerNum = -1;
 	chat_team = qfalse;
 	chat_admins = qfalse;
+	chat_clans = qfalse;
 	Field_Clear( &chatField );
 	chatField.widthInChars = 30;
 
@@ -104,6 +105,7 @@ void Con_MessageMode2_f (void) {
 	chat_playerNum = -1;
 	chat_team = qtrue;
 	chat_admins = qfalse;
+	chat_clans = qfalse;
 	Field_Clear( &chatField );
 	chatField.widthInChars = 25;
 	Key_SetCatcher( Key_GetCatcher( ) ^ KEYCATCH_MESSAGE );
@@ -122,6 +124,7 @@ void Con_MessageMode3_f (void) {
 	}
 	chat_team = qfalse;
 	chat_admins = qfalse;
+	chat_clans = qfalse;
 	Field_Clear( &chatField );
 	chatField.widthInChars = 30;
 	Key_SetCatcher( Key_GetCatcher( ) ^ KEYCATCH_MESSAGE );
@@ -140,6 +143,7 @@ void Con_MessageMode4_f (void) {
 	}
 	chat_team = qfalse;
 	chat_admins = qfalse;
+	chat_clans = qfalse;
 	Field_Clear( &chatField );
 	chatField.widthInChars = 30;
 	Key_SetCatcher( Key_GetCatcher( ) ^ KEYCATCH_MESSAGE );
@@ -154,6 +158,23 @@ void Con_MessageMode5_f (void) {
 	chat_playerNum = -1;
 	chat_team = qfalse;
 	chat_admins = qtrue;
+	chat_clans = qfalse;
+	Field_Clear( &chatField );
+	chatField.widthInChars = 25;
+
+	Key_SetCatcher( Key_GetCatcher( ) ^ KEYCATCH_MESSAGE );
+}
+
+/*
+================
+Con_MessageMode6_f
+================
+*/
+void Con_MessageMode6_f (void) {
+	chat_playerNum = -1;
+	chat_team = qfalse;
+	chat_admins = qfalse;
+	chat_clans = qtrue;
 	Field_Clear( &chatField );
 	chatField.widthInChars = 25;
 
@@ -338,6 +359,7 @@ void Con_Init (void) {
 	Cmd_AddCommand ("messagemode3", Con_MessageMode3_f);
 	Cmd_AddCommand ("messagemode4", Con_MessageMode4_f);
 	Cmd_AddCommand ("messagemode5", Con_MessageMode5_f);
+	Cmd_AddCommand ("messagemode6", Con_MessageMode6_f);
 	Cmd_AddCommand ("clear", Con_Clear_f);
 	Cmd_AddCommand ("condump", Con_Dump_f);
 }
@@ -640,6 +662,11 @@ void Con_DrawConsole( void ) {
 		else if( chat_admins )
 		{
 			SCR_DrawBigString( 8, 232, "Admin Say:", 1.0f, qfalse );
+			skip = 11;
+		}
+		else if( chat_clans )
+		{
+			SCR_DrawBigString( 8, 232, "Clan Say:", 1.0f, qfalse );
 			skip = 11;
 		}
 		else

@@ -99,6 +99,7 @@ cvar_t	*cl_trn;
 cvar_t	*cl_lanForcePackets;
 
 cvar_t	*cl_guidServerUniq;
+cvar_t	*clantag;
 
 clientActive_t		cl;
 clientConnection_t	clc;
@@ -3010,6 +3011,8 @@ void CL_Init( void ) {
 #ifdef USE_CURL
 	cl_cURLLib = Cvar_Get("cl_cURLLib", DEFAULT_CURL_LIB, CVAR_ARCHIVE);
 #endif
+
+	clantag = Cvar_Get ("clantag", "", CVAR_ARCHIVE);
 
 	cl_conXOffset = Cvar_Get ("cl_conXOffset", "0", 0);
 #ifdef MACOS_X
