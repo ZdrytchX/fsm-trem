@@ -40,6 +40,10 @@ ifneq ($(PLATFORM),darwin)
   BUILD_CLIENT_SMP = 0
 endif
 
+ifndef USE_SVN
+  USE_SVN=         = 1
+endif
+
 #############################################################################
 #
 # If you require a different configuration from the defaults below, create a
@@ -186,13 +190,13 @@ endif
 # version info
 VERSION=1.1.0
 
-USE_SVN=
+ifeq ($(USE_SVN),1)
 ifeq ($(wildcard .svn),.svn)
   SVN_REV=$(shell LANG=C svnversion .)
   ifneq ($(SVN_REV),)
     VERSION:=$(VERSION)_SVN$(SVN_REV)
-    USE_SVN=1
   endif
+endif
 endif
 
 
