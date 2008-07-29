@@ -2686,9 +2686,6 @@ void Com_Frame( void ) {
 	// old net chan encryption key
 	key = 0x87243987;
 
-	// write config file if anything changed
-	Com_WriteConfiguration(); 
-
 	//
 	// main event loop
 	//
@@ -2710,6 +2707,9 @@ void Com_Frame( void ) {
 		msec = com_frameTime - lastTime;
 	} while ( msec < minMsec );
 	Cbuf_Execute ();
+
+	// write config file if anything changed
+	Com_WriteConfiguration();
 
 	if (com_altivec->modified)
 	{
