@@ -388,6 +388,7 @@ void CL_SystemInfoChanged( void ) {
 	gameSet = qfalse;
 	// scan through all the variables in the systeminfo and locally set cvars to match
 	s = systemInfo;
+	
 	while ( s ) {
 		int cvar_flags;
 		
@@ -412,29 +413,17 @@ void CL_SystemInfoChanged( void ) {
 			Cvar_Get(key, value, CVAR_SERVER_CREATED | CVAR_ROM);
 		else
 		{
-			// This is here to read from old style servers, that still have sv_wwwDownload and sv_wwwBaseURL instead of sv_dlURL and sv_allowDownload
 			// If this cvar may not be modified by a server discard the value.
 			if(!(cvar_flags & (CVAR_SYSTEMINFO | CVAR_SERVER_CREATED)))
 			{
-				if( !Q_stricmp(key, "sv_wwwBaseURL") || !Q_stricmp(key, "sv_wwwDownload") )
-				 {
-				   Com_DPrintf(S_COLOR_YELLOW "WARNING: Had to bypass normal settings to set %s=%s\n", key, value);
-				   if( *value && !Q_stricmp(key, "sv_wwwBaseURL"))
-				    {
-				      Q_strncpyz(clc.sv_dlURL, value, sizeof(clc.sv_dlURL));
-				    }
-				   
-				   Cvar_Set(key, value);
-				   continue;
-				 }
-				 
-				 Com_Printf(S_COLOR_YELLOW "WARNING: server is not allowed to set %s=%s\n", key, value);
-				 continue;
+				Com_DPrintf(S_COLOR_YELLOW "WARNING: server is not allowed to set %s=%s\n", key, value);
+				continue;
 			}
 
 			Cvar_Set(key, value);
 		}
 	}
+	
 	// if game folder should not be set and it is set at the client side
 	if ( !gameSet && *Cvar_VariableString("fs_game") ) {
 		Cvar_Set( "fs_game", "" );
@@ -457,19 +446,20 @@ static void CL_ParseServerInfo(void)
 	clc.sv_allowDownload = atoi(Info_ValueForKey(serverInfo,
 		"sv_allowDownload"));
 		
-	// Backwards checking for old style cURL cvars
-	// Old style goes first
-	if( *Cvar_VariableString("sv_wwwBaseURL") )
-	 {
-	   return;
-	 }
-	// New style goes second
+	if( *Info_ValueForKey(serverInfo, "sv_wwwBaseURL") && atoi(Info_ValueForKey(serverInfo, "sv_wwwDownload")) )
+	{
+	  Q_strncpyz(clc.sv_dlURL,
+		Info_ValueForKey(serverInfo, "sv_wwwBaseURL"),
+		sizeof(clc.sv_dlURL));
+	  Com_DPrintf(S_COLOR_RED "Using sv_wwwBaseURL for download location\n");
+	}
 	else
-	 {
-	   Q_strncpyz(clc.sv_dlURL,
+	{
+	  Q_strncpyz(clc.sv_dlURL,
 		Info_ValueForKey(serverInfo, "sv_dlURL"),
 		sizeof(clc.sv_dlURL));
-	 }
+	  Com_DPrintf(S_COLOR_RED "Using sv_dlURL for download location\n");
+	}
 }
 
 /*
