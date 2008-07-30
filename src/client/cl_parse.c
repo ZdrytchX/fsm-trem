@@ -755,7 +755,7 @@ void CL_ParseVoip ( msg_t *msg ) {
 		            seqdiff, sender);
 		// tell speex that we're missing frames...
 		for (i = 0; i < seqdiff; i++) {
-			assert((written + clc.speexFrameSize) * 2 < sizeof (decoded));
+			assert((written + clc.speexFrameSize) * 8 < sizeof (decoded));
 			speex_decode_int(clc.speexDecoder[sender], NULL, decoded + written);
 			written += clc.speexFrameSize;
 		}
@@ -771,7 +771,7 @@ void CL_ParseVoip ( msg_t *msg ) {
 		MSG_ReadData(msg, encoded, len);
 
 		// shouldn't happen, but just in case...
-		if ((written + clc.speexFrameSize) * 2 > sizeof (decoded)) {
+		if ((written + clc.speexFrameSize) * 8 > sizeof (decoded)) {
 			Com_DPrintf("VoIP: playback %d bytes, %d samples, %d frames\n",
 			            written * 2, written, i);
 			S_RawSamples(sender + 1, written, clc.speexSampleRate, 2, 1,
@@ -789,7 +789,7 @@ void CL_ParseVoip ( msg_t *msg ) {
 		if (encio != NULL) { fwrite(encoded, len, 1, encio); fflush(encio); }
 		static FILE *decio = NULL;
 		if (decio == NULL) decio = fopen("voip-incoming-decoded.bin", "wb");
-		if (decio != NULL) { fwrite(decoded+written, clc.speexFrameSize*2, 1, decio); fflush(decio); }
+		if (decio != NULL) { fwrite(decoded+written, clc.speexFrameSize*8, 1, decio); fflush(decio); }
 		#endif
 
 		written += clc.speexFrameSize;
