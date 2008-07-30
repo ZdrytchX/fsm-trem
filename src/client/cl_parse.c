@@ -439,17 +439,21 @@ CL_ParseServerInfo
 static void CL_ParseServerInfo(void)
 {
 	const char *serverInfo;
+	const char *systemInfo;
 
 	serverInfo = cl.gameState.stringData
 		+ cl.gameState.stringOffsets[ CS_SERVERINFO ];
+		
+	systemInfo = cl.gameState.stringData
+		+ cl.gameState.stringOffsets[ CS_SYSTEMINFO ];
 
 	clc.sv_allowDownload = atoi(Info_ValueForKey(serverInfo,
 		"sv_allowDownload"));
 		
-	if( *Info_ValueForKey(serverInfo, "sv_wwwBaseURL") && atoi(Info_ValueForKey(serverInfo, "sv_wwwDownload")) )
+	if( *Info_ValueForKey(systemInfo, "sv_wwwBaseURL") && atoi(Info_ValueForKey(systemInfo, "sv_wwwDownload")) )
 	{
 	  Q_strncpyz(clc.sv_dlURL,
-		Info_ValueForKey(serverInfo, "sv_wwwBaseURL"),
+		Info_ValueForKey(systemInfo, "sv_wwwBaseURL"),
 		sizeof(clc.sv_dlURL));
 	  Com_DPrintf(S_COLOR_RED "Using sv_wwwBaseURL for download location\n");
 	}
