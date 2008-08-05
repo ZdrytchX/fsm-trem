@@ -347,7 +347,7 @@ static void IN_DeactivateMouse( void )
 	if( mouseActive )
 	{
 		SDL_WM_GrabInput( SDL_GRAB_OFF );
-		SDL_WarpMouse( glConfig.vidWidth >> 1, glConfig.vidHeight >> 1 );
+		SDL_WarpMouse( glConfig.vidWidth / 2, glConfig.vidHeight / 2 );
 		SDL_ShowCursor( 1 );
 
 		mouseActive = qfalse;

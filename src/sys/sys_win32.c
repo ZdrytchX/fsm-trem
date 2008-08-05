@@ -519,10 +519,23 @@ Block execution for msec or until input is recieved.
 */
 void Sys_Sleep( int msec )
 {
+
+        if( msec == 0 )
+	      return;
+	      
+	#ifdef DEDICATED
+	
 	if( msec < 0 )
 		WaitForSingleObject( GetStdHandle( STD_INPUT_HANDLE ), INFINITE );
 	else
 		WaitForSingleObject( GetStdHandle( STD_INPUT_HANDLE ), msec );
+#else
+	// Client Sys_Sleep doesn't support waiting on stdin
+	if( msec < 0 )
+		return;
+
+	Sleep( msec );
+#endif
 }
 
 /*
@@ -564,4 +577,19 @@ void Sys_ErrorDialog( const char *error )
 			CloseClipboard( );
 		}
 	}
+}
+
+/*
+==============
+Sys_PlatformInit
+
+Windows specific initialisation
+==============
+*/
+void Sys_PlatformInit( void )
+{
+#ifndef DEDICATED
+	// Force the DirectX SDL backend to be used
+	_putenv( "SDL_VIDEODRIVER=directx" );
+#endif
 }

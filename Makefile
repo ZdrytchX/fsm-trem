@@ -197,6 +197,13 @@ ifeq ($(wildcard .svn),.svn)
     VERSION:=$(VERSION)_SVN$(SVN_REV)
   endif
 endif
+else
+ifeq ($(wildcard .git/svn/.metadata),.git/svn/.metadata)
+   SVN_REV=$(shell LANG=C git-svn info | awk '$$1 == "Revision:" {print $$2; exit 0}')
+    ifneq ($(SVN_REV),)
+     VERSION:=$(VERSION)_SVN$(SVN_REV)
+    endif
+endif
 endif
 
 
@@ -421,6 +428,13 @@ ifeq ($(PLATFORM),mingw32)
     -DUSE_ICON
 
   # Require Windows XP or later
+  #
+  # IPv6 support requires a header wspiapi.h to work on earlier versions of
+  # windows. There is no MinGW equivalent of this header so we're forced to
+  # require XP. In theory this restriction can be removed if this header is
+  # obtained separately from the platform SDK. The MSVC build does not have
+  # this limitation.
+  
   BASE_CFLAGS += -DWINVER=0x501
 
   ifeq ($(USE_OPENAL),1)

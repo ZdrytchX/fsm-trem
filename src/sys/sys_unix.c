@@ -462,6 +462,9 @@ Block execution for msec or until input is recieved.
 void Sys_Sleep( int msec )
 {
 	fd_set fdset;
+	
+	if( msec == 0 )
+              return;
 
 	FD_ZERO(&fdset);
 	FD_SET(fileno(stdin), &fdset);
@@ -507,4 +510,17 @@ void Sys_ErrorDialog( const char *error )
 		FS_Write( buffer, size, f );
 
 	FS_FCloseFile( f );
+}
+
+
+/*
+==============
+Sys_PlatformInit
+
+Unix specific initialisation
+==============
+*/
+void Sys_PlatformInit( void )
+{
+	// NOP
 }

@@ -3154,7 +3154,7 @@ void CL_Shutdown( void ) {
 	Com_Printf( "----- CL_Shutdown -----\n" );
 
 	if ( recursive ) {
-		printf ("recursive shutdown\n");
+		Com_Printf( "WARNING: Recursive shutdown\n" );
 		return;
 	}
 	recursive = qtrue;
