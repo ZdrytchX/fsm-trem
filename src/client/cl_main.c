@@ -3056,7 +3056,11 @@ void CL_Init( void ) {
 	Cvar_Get ("color2", "5", CVAR_USERINFO | CVAR_ARCHIVE );
 	Cvar_Get ("handicap", "100", CVAR_USERINFO | CVAR_ARCHIVE );
 	Cvar_Get ("sex", "male", CVAR_USERINFO | CVAR_ARCHIVE );
-
+	
+	Cvar_Get( "p_hp", "", CVAR_ROM );
+	Cvar_Get( "p_team", "", CVAR_ROM );
+	Cvar_Get( "p_class", "", CVAR_ROM );
+	
 	Cvar_Get ("password", "", CVAR_USERINFO);
 
 #ifdef USE_MUMBLE
