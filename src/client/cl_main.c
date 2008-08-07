@@ -1741,6 +1741,36 @@ void CL_Configstrings_f( void ) {
 }
 
 /*
+==================
+CL_MapInfo_f
+==================
+*/
+void CL_MapInfo_f( void ) {
+	
+	if ( cls.state != CA_ACTIVE ) {
+		Com_Printf( "Not connected to a server.\n");
+		return;
+	}
+	
+	Com_Printf( "^3Map info:^7 %s\n", (!cl.gameState.stringOffsets[ 3 ]) ? "none" : cl.gameState.stringData + cl.gameState.stringOffsets[ 3 ] );
+}
+
+/*
+==================
+CL_LastVoteCalled_f
+==================
+*/
+void CL_LastVoteCalled_f( void ) {
+
+	if ( cls.state != CA_ACTIVE ) {
+		Com_Printf( "Not connected to a server.\n");
+		return;
+	}
+		
+	Com_Printf( "^3Last vote called:^7 %s\n", (!cl.gameState.stringOffsets[ 9 ]) ? "none" : cl.gameState.stringData + cl.gameState.stringOffsets[ 9 ]  );
+}
+
+/*
 ==============
 CL_Clientinfo_f
 ==============
@@ -3107,6 +3137,8 @@ void CL_Init( void ) {
 	//
 	Cmd_AddCommand ("cmd", CL_ForwardToServer_f);
 	Cmd_AddCommand ("configstrings", CL_Configstrings_f);
+	Cmd_AddCommand ("mapinfo", CL_MapInfo_f);
+	Cmd_AddCommand ("lastvote", CL_LastVoteCalled_f);
 	Cmd_AddCommand ("clientinfo", CL_Clientinfo_f);
 	Cmd_AddCommand ("snd_restart", CL_Snd_Restart_f);
 	Cmd_AddCommand ("vid_restart", CL_Vid_Restart_f);
@@ -3176,6 +3208,8 @@ void CL_Shutdown( void ) {
 
 	Cmd_RemoveCommand ("cmd");
 	Cmd_RemoveCommand ("configstrings");
+	Cmd_RemoveCommand ("lastvote");
+	Cmd_RemoveCommand ("mapinfo");
 	Cmd_RemoveCommand ("userinfo");
 	Cmd_RemoveCommand ("snd_restart");
 	Cmd_RemoveCommand ("vid_restart");
