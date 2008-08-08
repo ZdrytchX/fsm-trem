@@ -382,9 +382,10 @@ void SCR_DrawVoipSender( void ) {
 	else if (!cl_voip->integer)
 		return;  // client has VoIP support disabled.
 
-	sprintf( string, "Client speaking: %i", cls.voipSender );
-	SCR_DrawStringExt( 320 - strlen( string ) * -6, 340, 9, string, g_color_table[7], qtrue, qfalse );
+	sprintf( string, "Client speaking: %s (%i)", cls.voipSenderStr, cls.voipSender );
 	
+	// Display below the VoIP meter
+	SCR_DrawStringExt( 320 - strlen( string ) * 4, 30, 9, string, g_color_table[7], qfalse, qfalse );
        }
 }
 #endif

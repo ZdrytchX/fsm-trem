@@ -320,6 +320,7 @@ typedef struct {
 	int			realFrametime;		// ignoring pause, so console always works
 	int			voipTime;
 	int			voipSender;
+	char			*voipSenderStr;
 
 	int			numlocalservers;
 	serverInfo_t	localServers[MAX_OTHER_SERVERS];
