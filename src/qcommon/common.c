@@ -157,8 +157,8 @@ void QDECL Com_Printf( const char *fmt, ... ) {
 		}
 		Q_strcat(rd_buffer, rd_buffersize, msg);
     // TTimo nooo .. that would defeat the purpose
-		//rd_flush(rd_buffer);			
-		//*rd_buffer = 0;
+		// rd_flush(rd_buffer);			
+		// *rd_buffer = 0;
 		return;
 	}
 
