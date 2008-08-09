@@ -419,7 +419,8 @@ static qboolean GLimp_StartDriverAndSetMode( int mode, qboolean fullscreen )
 	
 		if (SDL_Init(SDL_INIT_VIDEO) == -1)
 		{
-			ri.Printf( PRINT_ALL, "SDL_Init FAILED (%s)\n", SDL_GetError());
+			ri.Printf( PRINT_ALL, "SDL_Init( SDL_INIT_VIDEO ) FAILED (%s)\n",
+					SDL_GetError());
 			return qfalse;
 		}
 			SDL_VideoDriverName( driverName, sizeof( driverName ) - 1 );
@@ -644,6 +645,8 @@ void GLimp_Init( void )
 
 	r_allowSoftwareGL = ri.Cvar_Get( "r_allowSoftwareGL", "0", CVAR_LATCH );
 
+	Sys_GLimpInit( );
+
 	// create the window and set up the context
 	if( !GLimp_StartDriverAndSetMode( r_mode->integer, r_fullscreen->integer ) )
 	{
@@ -681,8 +684,6 @@ void GLimp_Init( void )
 
 	// This depends on SDL_INIT_VIDEO, hence having it here
 	IN_Init( );
-
-	return;
 }
 
 
