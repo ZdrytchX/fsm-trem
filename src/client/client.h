@@ -409,6 +409,8 @@ extern	cvar_t	*cl_autoRecordDemo;
 
 extern	cvar_t	*clantag;
 
+extern	cvar_t	*cl_logs;
+
 #ifdef USE_MUMBLE
 extern	cvar_t	*cl_useMumble;
 extern	cvar_t	*cl_mumbleScale;
@@ -633,5 +635,10 @@ qboolean CL_VideoRecording( void );
 //
 void CL_WriteDemoMessage ( msg_t *msg, int headerBytes );
 
-
-
+//
+// cl_logs.c
+//
+void CL_OpenClientLog(void);
+void CL_CloseClientLog(void);
+void CL_WriteClientLog( char *text );
+void CL_WriteClientChatLog( char *text );
