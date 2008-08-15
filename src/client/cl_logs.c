@@ -62,8 +62,7 @@ void CL_WriteClientLog( char *text ) {
 			// varibles
 			char NoColorMsg[MAXPRINTMSG];
 			//decolor the string
-			Q_strncpyz( NoColorMsg, text, sizeof(NoColorMsg) );
-			Q_CleanStr( NoColorMsg );
+			Com_DecolorString( text, NoColorMsg, sizeof(NoColorMsg) );
 			//write to the file
 			FS_Write( NoColorMsg, strlen( NoColorMsg ), LogFileHandle );
 			//flush the file so we can see the data
@@ -111,8 +110,7 @@ void CL_WriteClientChatLog( char *text ) {
 					sprintf( Timestamp, "[%d:%02d][%d:%02d]", now.tm_hour, now.tm_min, cl.serverTime / 60000, ( cl.serverTime / 1000 ) % 60 ); //server Time
 				}
 				//decolor the string
-				Q_strncpyz( NoColorMsg, text, sizeof(NoColorMsg) );
-				Q_CleanStr( NoColorMsg );
+				Com_DecolorString( text, NoColorMsg, sizeof(NoColorMsg) );
 				//prepare text for log
 				sprintf( LogText, "%s%s", Timestamp, NoColorMsg ); //thing to write to log
 				//write to the file
