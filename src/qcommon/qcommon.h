@@ -760,8 +760,6 @@ sysEvent_t	Com_GetSystemEvent( void );
 
 char		*CopyString( const char *in );
 void		Info_Print( const char *s );
-//decolor string
-void		Com_DecolorString( char *in, char *out, int maxlen );
 
 void		Com_BeginRedirect (char *buffer, int buffersize, void (*flush)(char *));
 void		Com_EndRedirect( void );
