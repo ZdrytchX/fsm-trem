@@ -745,7 +745,8 @@ void Message_Key( int key ) {
 
 			else if (chat_clans) {
 				char clantagDecolored[ 32 ];
-				Com_DecolorString(clantag->string, clantagDecolored, sizeof( clantagDecolored ) );
+				Q_strncpyz( clantagDecolored, clantag->string, sizeof(clantagDecolored) );
+				Q_CleanStr( clantagDecolored );
 
 				if( strlen(clantagDecolored) > 2 && strlen(clantagDecolored) < 11 ) {
 					Com_sprintf( buffer, sizeof( buffer ), "m \"%s\" \"%s\"\n", clantagDecolored, chatField.buffer );
