@@ -27,7 +27,7 @@ ifndef BUILD_CLIENT_SMP
   BUILD_CLIENT_SMP = 0
 endif
 ifndef BUILD_SERVER
-  BUILD_SERVER     = 1
+  BUILD_SERVER     = 0
 endif
 ifndef BUILD_GAME_SO
   BUILD_GAME_SO    = 0
@@ -45,7 +45,7 @@ ifndef USE_SVN
 endif
 
 ifndef USE_OPTIM
-  USE_OPTIM		 = 3
+  USE_OPTIM	   = 3
 endif
 
 #############################################################################
@@ -129,7 +129,11 @@ ifndef USE_CURL_DLOPEN
 endif
 
 ifndef USE_CODEC_VORBIS
-USE_CODEC_VORBIS=0
+USE_CODEC_VORBIS=1
+endif
+
+ifndef USE_CODEC_MP3
+USE_CODEC_MP3=1
 endif
 
 ifndef USE_MUMBLE
@@ -195,19 +199,21 @@ endif
 VERSION=1.1.0
 
 ifeq ($(USE_SVN),1)
+
 ifeq ($(wildcard .svn),.svn)
   SVN_REV=$(shell LANG=C svnversion .)
   ifneq ($(SVN_REV),)
     VERSION:=$(VERSION)_SVN$(SVN_REV)
   endif
 endif
-else
+
 ifeq ($(wildcard .git/svn/.metadata),.git/svn/.metadata)
    SVN_REV=$(shell LANG=C git-svn info | awk '$$1 == "Revision:" {print $$2; exit 0}')
     ifneq ($(SVN_REV),)
      VERSION:=$(VERSION)_SVN$(SVN_REV)
     endif
 endif
+
 endif
 
 
@@ -254,6 +260,10 @@ ifeq ($(PLATFORM),linux)
     ifeq ($(USE_CURL_DLOPEN),1)
       BASE_CFLAGS += -DUSE_CURL_DLOPEN
     endif
+  endif
+  
+  ifeq ($(USE_CODEC_MP3),1)
+    BASE_CFLAGS += -DUSE_CODEC_MP3=1
   endif
 
   ifeq ($(USE_CODEC_VORBIS),1)
@@ -332,6 +342,10 @@ ifeq ($(PLATFORM),linux)
   ifeq ($(USE_CODEC_VORBIS),1)
     CLIENT_LDFLAGS += -lvorbisfile -lvorbis -logg
   endif
+  
+  ifeq ($(USE_CODEC_MP3),1)
+    CLIENT_LDFLAGS += -lmad
+  endif
 
   ifeq ($(USE_MUMBLE),1)
     CLIENT_LDFLAGS += -lrt
@@ -403,6 +417,11 @@ ifeq ($(PLATFORM),darwin)
     BASE_CFLAGS += -DUSE_CODEC_VORBIS
     CLIENT_LDFLAGS += -lvorbisfile -lvorbis -logg
   endif
+  
+  ifeq ($(USE_CODEC_MP3),1)
+    BASE_CFLAGS += -DUSE_CODEC_MP3=1
+    CLIENT_LDFLAGS += -lmad
+  endif
 
   BASE_CFLAGS += -D_THREAD_SAFE=1
 
@@ -472,6 +491,10 @@ ifeq ($(PLATFORM),mingw32)
   ifeq ($(USE_CODEC_VORBIS),1)
     BASE_CFLAGS += -DUSE_CODEC_VORBIS
   endif
+  
+  ifeq ($(USE_CODEC_MP3),1)
+    BASE_CFLAGS += -DUSE_CODEC_MP3=1
+  endif
 
   ifeq ($(USE_OPTIM),0)
     OPTIMIZE = -O3 -march=i586 -fno-omit-frame-pointer -ffast-math \
@@ -523,6 +546,10 @@ ifeq ($(PLATFORM),mingw32)
 
   ifeq ($(USE_CODEC_VORBIS),1)
     CLIENT_LDFLAGS += -lvorbisfile -lvorbis -logg
+  endif
+  
+  ifeq ($(USE_CODEC_MP3),1)
+    CLIENT_LDFLAGS += -lmad
   endif
 
   ifeq ($(ARCH),x86)
@@ -577,6 +604,10 @@ ifeq ($(PLATFORM),freebsd)
   ifeq ($(USE_CODEC_VORBIS),1)
     BASE_CFLAGS += -DUSE_CODEC_VORBIS
   endif
+  
+  ifeq ($(USE_CODEC_MP3),1)
+    BASE_CFLAGS += -DUSE_CODEC_MP3=1
+  endif
 
   ifeq ($(ARCH),axp)
     BASE_CFLAGS += -DNO_VM_COMPILED
@@ -617,6 +648,10 @@ ifeq ($(PLATFORM),freebsd)
   ifeq ($(USE_CODEC_VORBIS),1)
     CLIENT_LDFLAGS += -lvorbisfile -lvorbis -logg
   endif
+  
+  ifeq ($(USE_CODEC_MP3),1)
+    CLIENT_LDFLAGS += -lmad
+  endif
 
 else # ifeq freebsd
 
@@ -642,6 +677,10 @@ ifeq ($(PLATFORM),openbsd)
 
   ifeq ($(USE_CODEC_VORBIS),1)
     BASE_CFLAGS += -DUSE_CODEC_VORBIS
+  endif
+  
+  ifeq ($(USE_CODEC_MP3),1)
+    BASE_CFLAGS += -DUSE_CODEC_MP3=1
   endif
 
   BASE_CFLAGS += -DNO_VM_COMPILED -I/usr/X11R6/include -I/usr/local/include
@@ -672,6 +711,10 @@ ifeq ($(PLATFORM),openbsd)
 
   ifeq ($(USE_CODEC_VORBIS),1)
     CLIENT_LDFLAGS += -lvorbisfile -lvorbis -logg
+  endif
+  
+  ifeq ($(USE_CODEC_MP3),1)
+    CLIENT_LDFLAGS += -lmad
   endif
 
 else # ifeq openbsd
@@ -1186,6 +1229,7 @@ Q3OBJ = \
   $(B)/client/snd_codec.o \
   $(B)/client/snd_codec_wav.o \
   $(B)/client/snd_codec_ogg.o \
+  $(B)/client/snd_codec_mp3.o \
   \
   $(B)/client/qal.o \
   $(B)/client/snd_openal.o \
