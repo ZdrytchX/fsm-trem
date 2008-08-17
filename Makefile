@@ -27,7 +27,7 @@ ifndef BUILD_CLIENT_SMP
   BUILD_CLIENT_SMP = 0
 endif
 ifndef BUILD_SERVER
-  BUILD_SERVER     = 1
+  BUILD_SERVER     = 0
 endif
 ifndef BUILD_GAME_SO
   BUILD_GAME_SO    = 0
@@ -42,6 +42,10 @@ endif
 
 ifndef USE_SVN
   USE_SVN=         = 1
+endif
+
+ifndef USE_OPTIM
+  USE_OPTIM		 = 3
 endif
 
 #############################################################################
@@ -256,7 +260,29 @@ ifeq ($(PLATFORM),linux)
     BASE_CFLAGS += -DUSE_CODEC_VORBIS
   endif
 
-  OPTIMIZE = -O3 -ffast-math -funroll-loops -fomit-frame-pointer
+  ifeq ($(USE_OPTIM),0)
+    OPTIMIZE = -O3 -march=i586 -fno-omit-frame-pointer -ffast-math \
+    -falign-loops=2 -funroll-loops -falign-jumps=2 -falign-functions=2 \
+    -fstrength-reduce
+  endif
+
+  ifeq ($(USE_OPTIM),1)
+    OPTIMIZE = -O3 -march=native -mtune=native -fno-omit-frame-pointer -ffast-math \
+    -falign-loops=2 -falign-jumps=2 -falign-functions=2 \
+    -fstrength-reduce
+  endif
+
+  ifeq ($(USE_OPTIM),2)
+    OPTIMIZE = -O2 -march=i586 -fno-omit-frame-pointer -ffast-math \
+    -falign-loops=2 -funroll-loops -falign-jumps=2 -falign-functions=2 \
+    -fstrength-reduce
+  endif
+
+  ifeq ($(USE_OPTIM),3)
+    OPTIMIZE = -O2 -march=native -mtune=native -fno-omit-frame-pointer -ffast-math \
+    -falign-loops=2 -falign-jumps=2 -falign-functions=2 \
+    -fstrength-reduce
+  endif
 
   ifeq ($(ARCH),x86_64)
     OPTIMIZE = -O3 -fomit-frame-pointer -ffast-math -funroll-loops \
@@ -447,9 +473,29 @@ ifeq ($(PLATFORM),mingw32)
     BASE_CFLAGS += -DUSE_CODEC_VORBIS
   endif
 
-  OPTIMIZE = -O3 -march=i586 -fno-omit-frame-pointer -ffast-math \
+  ifeq ($(USE_OPTIM),0)
+    OPTIMIZE = -O3 -march=i586 -fno-omit-frame-pointer -ffast-math \
     -falign-loops=2 -funroll-loops -falign-jumps=2 -falign-functions=2 \
     -fstrength-reduce
+  endif
+
+  ifeq ($(USE_OPTIM),1)
+    OPTIMIZE = -O3 -march=native -mtune=native -fno-omit-frame-pointer -ffast-math \
+    -falign-loops=2 -falign-jumps=2 -falign-functions=2 \
+    -fstrength-reduce
+  endif
+
+  ifeq ($(USE_OPTIM),2)
+    OPTIMIZE = -O2 -march=i586 -fno-omit-frame-pointer -ffast-math \
+    -falign-loops=2 -funroll-loops -falign-jumps=2 -falign-functions=2 \
+    -fstrength-reduce
+  endif
+
+  ifeq ($(USE_OPTIM),3)
+    OPTIMIZE = -O2 -march=native -mtune=native -fno-omit-frame-pointer -ffast-math \
+    -falign-loops=2 -falign-jumps=2 -falign-functions=2 \
+    -fstrength-reduce
+  endif
 
   HAVE_VM_COMPILED = true
 
