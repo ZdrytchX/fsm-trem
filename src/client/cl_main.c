@@ -1412,6 +1412,107 @@ CONSOLE COMMANDS
 ======================================================================
 */
 
+// Menu wrappers
+void Cbuf_InsertText( const char *text );
+
+/*
+==================
+CL_Menu_TS_f
+==================
+*/
+void CL_Menu_TS_f( void ) {
+	
+	if ( cls.state != CA_ACTIVE ) {
+		Com_Printf( "Not connected to a server.\n");
+		return;
+	}
+	
+	Cbuf_InsertText( "menu tremulous_teamselect\n" );
+	
+}
+
+/*
+==================
+CL_Menu_AC_f
+==================
+*/
+void CL_Menu_AC_f( void ) {
+	
+	if ( cls.state != CA_ACTIVE ) {
+		Com_Printf( "Not connected to a server.\n");
+		return;
+	}
+	
+	Cbuf_InsertText( "menu tremulous_alienclass\n" );
+	
+}
+
+/*
+==================
+CL_Menu_HI_f
+==================
+*/
+void CL_Menu_HI_f( void ) {
+	
+	if ( cls.state != CA_ACTIVE ) {
+		Com_Printf( "Not connected to a server.\n");
+		return;
+	}
+	
+	Cbuf_InsertText( "menu tremulous_humanitem\n" );
+	
+}
+
+/*
+==================
+CL_Menu_AB_f
+==================
+*/
+void CL_Menu_AB_f( void ) {
+	
+	if ( cls.state != CA_ACTIVE ) {
+		Com_Printf( "Not connected to a server.\n");
+		return;
+	}
+	
+	Cbuf_InsertText( "menu tremulous_alienbuild\n" );
+	
+}
+
+/*
+==================
+CL_Menu_HB_f
+==================
+*/
+void CL_Menu_HB_f( void ) {
+	
+	if ( cls.state != CA_ACTIVE ) {
+		Com_Printf( "Not connected to a server.\n");
+		return;
+	}
+	
+	Cbuf_InsertText( "menu tremulous_humanbuild\n" );
+	
+}
+
+/*
+==================
+CL_Menu_HA_f
+==================
+*/
+void CL_Menu_HA_f( void ) {
+	
+	if ( cls.state != CA_ACTIVE ) {
+		Com_Printf( "Not connected to a server.\n");
+		return;
+	}
+	
+	Cbuf_InsertText( "menu tremulous_humanarmoury\n" );
+	
+}
+
+// End of menu wrappers
+
 /*
 ==================
 CL_ForwardToServer_f
@@ -3183,6 +3284,16 @@ void CL_Init( void ) {
 	//
 	// register our commands
 	//
+	
+	// Menu wrappers [start]
+	Cmd_AddCommand ("menu_teamSelect", CL_Menu_TS_f);
+	Cmd_AddCommand ("menu_alienClass", CL_Menu_AC_f);
+	Cmd_AddCommand ("menu_humanItem", CL_Menu_HI_f);
+	Cmd_AddCommand ("menu_alienBuild", CL_Menu_AB_f);
+	Cmd_AddCommand ("menu_humanBuild", CL_Menu_HB_f);
+	Cmd_AddCommand ("menu_humanArmoury",CL_Menu_HA_f);
+	// Menu wrappers [stop]
+	
 	Cmd_AddCommand ("cmd", CL_ForwardToServer_f);
 	Cmd_AddCommand ("configstrings", CL_Configstrings_f);
 	Cmd_AddCommand ("mapinfo", CL_MapInfo_f);
@@ -3256,7 +3367,16 @@ void CL_Shutdown( void ) {
 	CL_ShutdownRef();
 	
 	CL_ShutdownUI();
-
+	
+	// Menu wrappers [start]
+	Cmd_RemoveCommand ("menu_teamSelect");
+	Cmd_RemoveCommand ("menu_alienClass");
+	Cmd_RemoveCommand ("menu_humanItem");
+	Cmd_RemoveCommand ("menu_alienBuild");
+	Cmd_RemoveCommand ("menu_humanBuild");
+	Cmd_RemoveCommand ("menu_humanArmoury");
+	// Menu wrappers [stop]
+	
 	Cmd_RemoveCommand ("cmd");
 	Cmd_RemoveCommand ("configstrings");
 	Cmd_RemoveCommand ("lastvote");

@@ -41,7 +41,7 @@ ifneq ($(PLATFORM),darwin)
 endif
 
 ifndef USE_SVN
-  USE_SVN=         = 1
+  USE_SVN          = 1
 endif
 
 ifndef USE_OPTIM
@@ -199,21 +199,12 @@ endif
 VERSION=1.1.0
 
 ifeq ($(USE_SVN),1)
-
-ifeq ($(wildcard .svn),.svn)
-  SVN_REV=$(shell LANG=C svnversion .)
-  ifneq ($(SVN_REV),)
-    VERSION:=$(VERSION)_SVN$(SVN_REV)
-  endif
-endif
-
-ifeq ($(wildcard .git/svn/.metadata),.git/svn/.metadata)
-   SVN_REV=$(shell LANG=C git-svn info | awk '$$1 == "Revision:" {print $$2; exit 0}')
+  ifeq ($(wildcard .svn),.svn)
+    SVN_REV=$(shell LANG=C svnversion .)
     ifneq ($(SVN_REV),)
-     VERSION:=$(VERSION)_SVN$(SVN_REV)
+      VERSION:=$(VERSION)_SVN$(SVN_REV)
     endif
-endif
-
+  endif
 endif
 
 
