@@ -42,7 +42,7 @@ ifndef USE_SVN
 endif
 
 ifndef USE_OPTIM
-  USE_OPTIM	   = 3
+  USE_OPTIM	   = 0
 endif
 
 #############################################################################
