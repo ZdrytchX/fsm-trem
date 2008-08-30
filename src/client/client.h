@@ -411,6 +411,8 @@ extern	cvar_t	*clantag;
 
 extern	cvar_t	*cl_logs;
 
+extern	cvar_t	*cl_consoleKeys;
+
 #ifdef USE_MUMBLE
 extern	cvar_t	*cl_useMumble;
 extern	cvar_t	*cl_mumbleScale;
@@ -501,9 +503,8 @@ void IN_CenterView (void);
 void CL_VerifyCode( void );
 
 float CL_KeyState (kbutton_t *key);
+int Key_StringToKeynum( char *str );
 char *Key_KeynumToString (int keynum);
-int Key_GetCatcher( void );
-void Key_SetCatcher( int catcher );
 
 //
 // cl_parse.c

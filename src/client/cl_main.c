@@ -104,6 +104,8 @@ cvar_t	*clantag;
 
 cvar_t	*cl_logs;
 
+cvar_t	*cl_consoleKeys;
+
 clientActive_t		cl;
 clientConnection_t	clc;
 clientStatic_t		cls;
@@ -3221,6 +3223,9 @@ void CL_Init( void ) {
 	cl_guidServerUniq = Cvar_Get ("cl_guidServerUniq", "0", CVAR_ARCHIVE);
 
 	cl_logs = Cvar_Get ("cl_logs", "0", CVAR_ARCHIVE);
+
+	// 0x7e = ~ and 0x60 = `
+	cl_consoleKeys = Cvar_Get( "cl_consoleKeys", "0x7e 0x60", CVAR_ARCHIVE);
 
 	// userinfo
 	Cvar_Get ("name", Sys_GetCurrentUser( ), CVAR_USERINFO | CVAR_ARCHIVE );
