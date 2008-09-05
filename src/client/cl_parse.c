@@ -332,8 +332,109 @@ void CL_ParseSnapshot( msg_t *msg ) {
         ps = &cl.snap.ps;
 
         Cvar_SetValue( "p_hp", ps->stats[ STAT_HEALTH ] );
+        Cvar_Set( "p_currenthp", va( "%i/%i", ps->stats[ STAT_HEALTH ], ps->stats[ STAT_MAX_HEALTH ] ) );	
         Cvar_SetValue( "p_team", ps->stats[ STAT_TEAM ] );
 	Cvar_SetValue( "p_class", ps->stats[ STAT_CLASS ] );
+
+	switch ( ps->stats[ STAT_CLASS ] ) {
+	  case PCL_ALIEN_BUILDER0:
+	    Cvar_Set( "p_classname", "Builder" );
+	    break; 
+	  case PCL_ALIEN_BUILDER0_UPG:
+	    Cvar_Set( "p_classname", "Advanced Builder" );
+	    break; 
+	  case PCL_ALIEN_LEVEL0:
+	    Cvar_Set( "p_classname", "Dretch" );
+	    break; 
+	  case PCL_ALIEN_LEVEL1:
+	    Cvar_Set( "p_classname", "Basilisk" );
+	    break; 
+	  case PCL_ALIEN_LEVEL1_UPG:
+	    Cvar_Set( "p_classname", "Advanced Basilisk" );
+	    break; 
+	  case PCL_ALIEN_LEVEL2:
+	    Cvar_Set( "p_classname", "Marauder" );
+	    break; 
+	  case PCL_ALIEN_LEVEL2_UPG:
+	    Cvar_Set( "p_classname", "Advanced Marauder" );
+	    break; 
+	  case PCL_ALIEN_LEVEL3:
+	    Cvar_Set( "p_classname", "Dragoon" );
+	    break; 
+	  case PCL_ALIEN_LEVEL3_UPG:
+	    Cvar_Set( "p_classname", "Advanced Dragoon" );
+	    break; 
+	  case PCL_ALIEN_LEVEL4:
+	    Cvar_Set( "p_classname", "Tyrant" );
+	    break; 
+	    
+	  case PCL_HUMAN:
+	    Cvar_Set( "p_classname", "Human" );
+	    break; 
+	  case PCL_HUMAN_BSUIT:
+	    Cvar_Set( "p_classname", "Battlesuit" );
+	    break; 
+
+	  default:
+	    Cvar_Set( "p_classname", "Unknown" );
+	    break; 
+	}
+	
+	switch ( ps->weapon ) { 
+	  case WP_HBUILD:
+	    Cvar_Set( "p_weaponname", "Construction Kit" );
+	    break; 
+	  case WP_HBUILD2:
+	    Cvar_Set( "p_weaponname", "Advanced Construction Kit" );
+	    break; 
+	    
+	  case WP_BLASTER:
+	    Cvar_Set( "p_weaponname", "Blaster" );
+	    break;
+	  case WP_MACHINEGUN:
+	    Cvar_Set( "p_weaponname", "Machine Gun" );
+	    break; 
+	  case WP_PAIN_SAW:
+	    Cvar_Set( "p_weaponname", "Painsaw" );
+	    break; 
+	  case WP_SHOTGUN:
+	    Cvar_Set( "p_weaponname", "Shotgun" );
+	    break;
+	  case WP_LAS_GUN:
+	    Cvar_Set( "p_weaponname", "Laser Gun" );
+	    break;
+	  case WP_MASS_DRIVER:
+	    Cvar_Set( "p_weaponname", "Mass Driver" );
+	    break; 
+	  case WP_CHAINGUN:
+	    Cvar_Set( "p_weaponname", "Chain Gun" );
+	    break;
+	  case WP_PULSE_RIFLE:
+	    Cvar_Set( "p_weaponname", "Pulse Rifle" );
+	    break; 
+	  case WP_FLAMER:
+	    Cvar_Set( "p_weaponname", "Flame Thrower" );
+	    break; 
+	  case WP_LUCIFER_CANNON:
+	    Cvar_Set( "p_weaponname", "Lucifier cannon" );
+	    break;
+	  case WP_GRENADE:
+	    Cvar_Set( "p_weaponname", "Grenade" );
+	    break; 
+	  default:
+	    Cvar_Set( "p_weaponname", "Unknown" );
+	    break; 
+	}
+
+	int TempAmmoArray;
+	int TemoAmmo;
+	int TempClips;
+	
+	TempAmmoArray = ps->ammo[ ps->weapon ];
+	TemoAmmo = TempAmmoArray & 0x0FFF;
+	TempClips = (TempAmmoArray >> 12 ) & 0x0F;
+	Cvar_Set( "p_ammo", va( "%i/%i", TemoAmmo, TempClips ) );
+  
 	Cvar_SetValue( "p_credits", ps->persistant[ PERS_CREDIT ] ); 
 	Cvar_SetValue( "p_score", ps->persistant[ PERS_SCORE ] );
 	Cvar_SetValue( "p_killed", ps->persistant[ PERS_KILLED ] ); 
