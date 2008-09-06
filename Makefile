@@ -26,7 +26,7 @@ ifndef BUILD_CLIENT
 endif
 
 ifndef BUILD_CLIENT_SMP
-  BUILD_CLIENT_SMP = 0
+  BUILD_CLIENT_SMP = 1
 endif
 
 ifndef BUILD_SERVER
@@ -169,6 +169,9 @@ SPEEXDIR=$(MOUNT_DIR)/libspeex
 SDLHDIR=$(MOUNT_DIR)/SDL12
 LIBSDIR=$(MOUNT_DIR)/libs
 MASTERDIR=$(MOUNT_DIR)/master
+OGGHDIR=$(MOUNT_DIR)/ogg
+VORBISHDIR=$(MOUNT_DIR)/vorbis
+MADHDIR=$(MOUNT_DIR)/mad
 TEMPDIR=/tmp
 
 # set PKG_CONFIG_PATH to influence this, e.g.
@@ -394,18 +397,19 @@ ifeq ($(PLATFORM),darwin)
 
   ifeq ($(USE_CODEC_VORBIS),1)
     BASE_CFLAGS += -DUSE_CODEC_VORBIS
-    CLIENT_LDFLAGS += -lvorbisfile -lvorbis -logg
+   # CLIENT_LDFLAGS += -lvorbisfile -lvorbis -logg
   endif
   
   ifeq ($(USE_CODEC_MP3),1)
     BASE_CFLAGS += -DUSE_CODEC_MP3=1
-    CLIENT_LDFLAGS += -lmad
+   # CLIENT_LDFLAGS += -lmad
   endif
 
   BASE_CFLAGS += -D_THREAD_SAFE=1
 
   ifeq ($(USE_LOCAL_HEADERS),1)
-    BASE_CFLAGS += -I$(SDLHDIR)/include
+    BASE_CFLAGS += -I$(SDLHDIR)/include -I$(OGGHDIR)/include \
+	-I$(VORBISHDIR)/include -I$(MADHDIR)/include
   endif
 
   # We copy sdlmain before ranlib'ing it so that subversion doesn't think
@@ -414,6 +418,25 @@ ifeq ($(PLATFORM),darwin)
   LIBSDLMAINSRC=$(LIBSDIR)/macosx/libSDLmain.a
   CLIENT_LDFLAGS += -framework Cocoa -framework IOKit -framework OpenGL \
     $(LIBSDIR)/macosx/libSDL-1.2.0.dylib
+  
+  ifeq ($(USE_CODEC_MP3),1)
+	LIBMADSRC=$(LIBSDIR)/macosx/libmad.a
+	LIBMAD=$(B)/libmad.a
+	CLIENT_LDFLAGS += $(LIBSDIR)/macosx/libmad.0.2.1.dylib
+  endif
+  
+  ifeq ($(USE_CODEC_VORBIS),1)
+	LIBVORBIS=$(B)/libvorbis.a
+	LIBVORBISSRC=$(LIBSDIR)/macosx/libvorbis.a
+	LIBVORBISFILE=$(B)/libvorbisfile.a
+	LIBVORBISFILESRC=$(LIBSDIR)/macosx/libvorbisfile.a
+	LIBOGG=$(B)/libogg.a
+	LIBOGGSRC=$(LIBSDIR)/macosx/libogg.a
+	CLIENT_LDFLAGS += \
+		$(LIBSDIR)/macosx/libogg.0.5.3.dylib \
+		$(LIBSDIR)/macosx/libvorbisfile.3.2.0.dylib \
+		$(LIBSDIR)/macosx/libvorbis.0.4.0.dylib
+  endif
 
   OPTIMIZE += -ffast-math -falign-loops=16
 
@@ -1228,15 +1251,15 @@ Q3POBJ += \
 Q3POBJ_SMP += \
   $(B)/clientsmp/sdl_glimp.o
 
-$(B)/tremulous.$(ARCH)$(BINEXT): $(Q3OBJ) $(Q3POBJ) $(LIBSDLMAIN)
+$(B)/tremulous.$(ARCH)$(BINEXT): $(Q3OBJ) $(Q3POBJ) $(LIBSDLMAIN) $(LIBOGG) $(LIBVORBIS) $(LIBVORBISFILE) $(LIBMAD)
 	$(echo_cmd) "LD $@"
 	$(Q)$(CC) -o $@ $(Q3OBJ) $(Q3POBJ) $(CLIENT_LDFLAGS) \
-		$(LDFLAGS) $(LIBSDLMAIN)
+		$(LDFLAGS) $(LIBSDLMAIN) $(LIBOGG) $(LIBVORBIS) $(LIBVORBISFILE) $(LIBMAD)
 
-$(B)/tremulous-smp.$(ARCH)$(BINEXT): $(Q3OBJ) $(Q3POBJ_SMP) $(LIBSDLMAIN)
+$(B)/tremulous-smp.$(ARCH)$(BINEXT): $(Q3OBJ) $(Q3POBJ_SMP) $(LIBSDLMAIN) $(LIBOGG) $(LIBVORBIS) $(LIBVORBISFILE) $(LIBMAD)
 	$(echo_cmd) "LD $@"
 	$(Q)$(CC) -o $@ $(Q3OBJ) $(Q3POBJ_SMP) $(CLIENT_LDFLAGS) \
-		$(THREAD_LDFLAGS) $(LDFLAGS) $(LIBSDLMAIN)
+		$(THREAD_LDFLAGS) $(LDFLAGS) $(LIBSDLMAIN) $(LIBOGG) $(LIBVORBIS) $(LIBVORBISFILE) $(LIBMAD)
 
 ifneq ($(strip $(LIBSDLMAIN)),)
 ifneq ($(strip $(LIBSDLMAINSRC)),)
@@ -1246,6 +1269,37 @@ $(LIBSDLMAIN) : $(LIBSDLMAINSRC)
 endif
 endif
 
+ifneq ($(strip $(LIBMAD)),)
+ifneq ($(strip $(LIBMADSRC)),)
+$(LIBMAD) : $(LIBMADSRC)
+	cp $< $@
+	ranlib $@
+endif
+endif
+
+ifneq ($(strip $(LIBOGG)),)
+ifneq ($(strip $(LIBOGGSRC)),)
+$(LIBOGG) : $(LIBOGGSRC)
+	cp $< $@
+	ranlib $@
+endif
+endif
+
+ifneq ($(strip $(LIBVORBIS)),)
+ifneq ($(strip $(LIBVORBISSRC)),)
+$(LIBVORBIS) : $(LIBVORBISSRC)
+	cp $< $@
+	ranlib $@
+endif
+endif
+
+ifneq ($(strip $(LIBVORBISFILE)),)
+ifneq ($(strip $(LIBVORBISFILESRC)),)
+$(LIBVORBISFILE) : $(LIBVORBISFILESRC)
+	cp $< $@
+	ranlib $@
+endif
+endif
 
 
 #############################################################################
