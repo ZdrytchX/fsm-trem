@@ -426,11 +426,12 @@ void CL_ParseSnapshot( msg_t *msg ) {
 	    break; 
 	}
 
-	int TempAmmoArray;
-	int TemoAmmo;
-	int TempClips;
+	int TempAmmoArray = 0;
+	int TemoAmmo = 0;
+	int TempClips = 0;
 	
-	TempAmmoArray = ps->ammo[ ps->weapon ];
+	if( ps->weapon < 16 ) TempAmmoArray = ps->ammo[ ps->weapon ];
+	else if( ps->weapon <= 31 ) TempAmmoArray = ps->misc[ ps->weapon - 16 ]; 
 	TemoAmmo = TempAmmoArray & 0x0FFF;
 	TempClips = (TempAmmoArray >> 12 ) & 0x0F;
 	Cvar_Set( "p_ammo", va( "%i/%i", TemoAmmo, TempClips ) );
