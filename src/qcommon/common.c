@@ -3053,6 +3053,22 @@ void Field_CompleteFilename( const char *dir,
 
 /*
 ===============
+Field_CompleteAlias
+===============
+*/
+void Field_CompleteAlias( void )
+{
+	matchCount = 0;
+	shortestMatch[ 0 ] = 0;
+
+	Cmd_AliasCompletion( FindMatches );
+
+	if( !Field_Complete( ) )
+		Cmd_AliasCompletion( PrintMatches );
+}
+
+/*
+===============
 Field_CompleteCommand
 ===============
 */

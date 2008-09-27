@@ -339,7 +339,7 @@ void Cmd_If_f( void ) {
     Com_Printf ("if <value1> <operator> <value2> <cmdthen> (<cmdelse>) : compares the first two values and executes <cmdthen> if true, <cmdelse> if false\n");
     return;
   }
-  Cbuf_InsertText( va("%s\n", v ) );
+  Cbuf_InsertText( va("vstr %s\n", v ) );
 }
 
 /*
@@ -484,7 +484,7 @@ void Cmd_Strcmp_f( void ) {
     }
   }
   else {
-    Com_Printf ("strcmp <string1> <operator> <string22> <cmdthen> (<cmdelse>) : compares the first two strings and executes <cmdthen> if true, <cmdelse> if false\n");
+    Com_Printf ("strcmp <string1> <operator> <string2> <cmdthen> (<cmdelse>) : compares the first two strings and executes <cmdthen> if true, <cmdelse> if false\n");
     return;
   }
   Cbuf_InsertText( va("%s\n", v ) );
@@ -833,6 +833,18 @@ void Cmd_Alias_f(void)
 	cvar_modifiedFlags |= CVAR_ARCHIVE;
 }
 
+/*
+============
+Cmd_AliasCompletion
+============
+*/
+void	Cmd_AliasCompletion( void(*callback)(const char *s) ) {
+	cmd_alias_t	*alias;
+	
+	for (alias=cmd_aliases ; alias ; alias=alias->next) {
+		callback( alias->name );
+	}
+}
 
 /*
 =============================================================================
@@ -1416,6 +1428,48 @@ void Cmd_CompleteCfgName( char *args, int argNum ) {
 }
 
 /*
+==================
+Cmd_CompleteAliasName
+==================
+*/
+void Cmd_CompleteAliasName( char *args, int argNum ) {
+	if( argNum == 2 ) {
+		Field_CompleteAlias( );
+	}
+}
+
+/*
+==================
+Cmd_CompleteConcat
+==================
+*/
+void Cmd_CompleteConcat( char *args, int argNum )
+{
+	// Skip
+	char *p = Com_SkipTokens( args, argNum - 1, " " );
+
+	if( p > args )
+		Field_CompleteCommand( p, qfalse, qtrue );
+}
+
+/*
+==================
+Cmd_CompleteIf
+==================
+*/
+void Cmd_CompleteIf( char *args, int argNum )
+{
+	if( argNum == 5 || argNum == 6 )
+	{
+		// Skip
+		char *p = Com_SkipTokens( args, argNum - 1, " " );
+
+		if( p > args )
+			Field_CompleteCommand( p, qfalse, qtrue );
+	}
+}
+
+/*
 ============
 Cmd_Init
 ============
@@ -1427,15 +1481,21 @@ void Cmd_Init (void) {
 	Cmd_AddCommand ("vstr",Cmd_Vstr_f);
 	Cmd_SetCommandCompletionFunc( "vstr", Cvar_CompleteCvarName );
 	Cmd_AddCommand ("if",Cmd_If_f);
+	Cmd_SetCommandCompletionFunc( "if", Cmd_CompleteIf );
 	Cmd_AddCommand ("calc",Cmd_Calc_f);
 	Cmd_AddCommand ("math",Cmd_Math_f);
+	Cmd_SetCommandCompletionFunc( "math", Cvar_CompleteCvarName );
 	Cmd_AddCommand ("concat",Cmd_Concat_f);
+	Cmd_SetCommandCompletionFunc( "concat", Cmd_CompleteConcat );
 	Cmd_AddCommand ("strcmp",Cmd_Strcmp_f);
+	Cmd_SetCommandCompletionFunc( "strcmp", Cmd_CompleteIf );
 	Cmd_AddCommand ("echo",Cmd_Echo_f);
 	Cmd_AddCommand ("clean",Cmd_Clean_f);
 	Cmd_AddCommand ("wait", Cmd_Wait_f);
 	Cmd_AddCommand ("alias", Cmd_Alias_f);
+	Cmd_SetCommandCompletionFunc( "alias", Cmd_CompleteAliasName );
 	Cmd_AddCommand ("unalias", Cmd_UnAlias_f);
+	Cmd_SetCommandCompletionFunc( "unalias", Cmd_CompleteAliasName );
 	Cmd_AddCommand ("aliaslist", Cmd_AliasList_f);
 	Cmd_AddCommand ("clearaliases", Cmd_ClearAliases_f);
 }

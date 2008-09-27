@@ -32,6 +32,21 @@ These commands can only be entered from stdin or by a remote operator datagram
 ===============================================================================
 */
 
+/*
+====================
+SV_CompleteDemoName
+====================
+*/
+static void SV_CompleteDemoName( char *args, int argNum )
+{
+	if( argNum == 2 )
+	{
+		char demoExt[ 16 ];
+
+		Com_sprintf( demoExt, sizeof( demoExt ), ".svdm_%d", PROTOCOL_VERSION );
+		Field_CompleteFilename( "svdemos", demoExt, qtrue );
+	}
+}
 
 /*
 ==================
@@ -774,6 +789,7 @@ void SV_AddOperatorCommands( void ) {
 	Cmd_AddCommand ("killserver", SV_KillServer_f);
 	Cmd_AddCommand ("demo_record", SV_Demo_Record_f);
 	Cmd_AddCommand ("demo_play", SV_Demo_Play_f);
+	Cmd_SetCommandCompletionFunc( "demo_play", SV_CompleteDemoName );
 	Cmd_AddCommand ("demo_stop", SV_Demo_Stop_f);
 	if( com_dedicated->integer ) {
 		Cmd_AddCommand ("say", SV_ConSay_f);
