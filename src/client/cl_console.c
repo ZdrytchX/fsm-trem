@@ -398,6 +398,17 @@ void Con_CheckResize (void)
 	con.display = con.current;
 }
 
+/*
+==================
+Cmd_CompleteTxtName
+==================
+*/
+void Cmd_CompleteTxtName( char *args, int argNum ) {
+	if( argNum == 2 ) {
+		Field_CompleteFilename( "", "txt", qfalse );
+	}
+}
+
 
 /*
 ================
@@ -444,6 +455,7 @@ void Con_Init (void) {
 	Cmd_AddCommand ("messagemode6", Con_MessageMode6_f);
 	Cmd_AddCommand ("clear", Con_Clear_f);
 	Cmd_AddCommand ("condump", Con_Dump_f);
+	Cmd_SetCommandCompletionFunc( "condump", Cmd_CompleteTxtName );
 }
 
 

@@ -84,7 +84,7 @@ static void IN_PrintKey( const SDL_keysym *keysym, keyNum_t key, qboolean down )
 	else
 		Com_Printf( "  " );
 
-	Com_Printf( "0x%hx \"%s\"", keysym->scancode,
+	Com_Printf( "0x%02x \"%s\"", keysym->scancode,
 			SDL_GetKeyName( keysym->sym ) );
 
 	if( keysym->mod & KMOD_LSHIFT )   Com_Printf( " KMOD_LSHIFT" );
@@ -100,11 +100,11 @@ static void IN_PrintKey( const SDL_keysym *keysym, keyNum_t key, qboolean down )
 	if( keysym->mod & KMOD_MODE )     Com_Printf( " KMOD_MODE" );
 	if( keysym->mod & KMOD_RESERVED ) Com_Printf( " KMOD_RESERVED" );
 
-	Com_Printf( " Q:%d(%s)", key, Key_KeynumToString( key ) );
+	Com_Printf( " Q:0x%02x(%s)", key, Key_KeynumToString( key ) );
 
 	if( keysym->unicode )
 	{
-		Com_Printf( " U:%d", keysym->unicode );
+		Com_Printf( " U:0x%02x", keysym->unicode );
 
 		if( keysym->unicode > ' ' && keysym->unicode < '~' )
 			Com_Printf( "(%c)", (char)keysym->unicode );
@@ -120,9 +120,24 @@ static void IN_PrintKey( const SDL_keysym *keysym, keyNum_t key, qboolean down )
 IN_IsConsoleKey
 ===============
 */
-static qboolean IN_IsConsoleKey( keyNum_t key, const char *buf )
+static qboolean IN_IsConsoleKey( keyNum_t key, const unsigned char character )
 {
-	static int consoleKeys[ MAX_CONSOLE_KEYS ];
+	typedef struct consoleKey_s
+	{
+		enum
+		{
+			KEY,
+			CHARACTER
+		} type;
+
+		union
+		{
+			keyNum_t key;
+			unsigned char character;
+		} u;
+	} consoleKey_t;
+
+	static consoleKey_t consoleKeys[ MAX_CONSOLE_KEYS ];
 	static int numConsoleKeys = 0;
 	int i;
 
@@ -137,26 +152,55 @@ static qboolean IN_IsConsoleKey( keyNum_t key, const char *buf )
 
 		while( numConsoleKeys < MAX_CONSOLE_KEYS )
 		{
+			consoleKey_t *c = &consoleKeys[ numConsoleKeys ];
+			int charCode = 0;
+
 			token = COM_Parse( &text_p );
 			if( !token[ 0 ] )
 				break;
 
-			consoleKeys[ numConsoleKeys++ ] =
-				Key_StringToKeynum( token );
+			if( strlen( token ) == 4 )
+				charCode = Com_HexStrToInt( token );
+
+			if( charCode > 0 )
+			{
+				c->type = CHARACTER;
+				c->u.character = (unsigned char)charCode;
+			}
+			else
+			{
+				c->type = KEY;
+				c->u.key = Key_StringToKeynum( token );
+
+				// 0 isn't a key
+				if( c->u.key <= 0 )
+					continue;
+			}
+
+			numConsoleKeys++;
 		}
 	}
 
-	// Use the character in preference to the key name
-	if( *buf )
+	// If the character is the same as the key, prefer the character
+	if( key == character )
 		key = 0;
 
 	for( i = 0; i < numConsoleKeys; i++ )
 	{
-		if( !consoleKeys[ i ] )
-			continue;
+		consoleKey_t *c = &consoleKeys[ i ];
 
-		if( consoleKeys[ i ] == key || consoleKeys[ i ] == *buf )
-			return qtrue;
+		switch( c->type )
+		{
+			case KEY:
+				if( key && c->u.key == key )
+					return qtrue;
+				break;
+
+			case CHARACTER:
+				if( c->u.character == character )
+					return qtrue;
+				break;
+		}
 	}
 
 	return qfalse;
@@ -170,7 +214,7 @@ IN_TranslateSDLToQ3Key
 static const char *IN_TranslateSDLToQ3Key( SDL_keysym *keysym,
 	keyNum_t *key, qboolean down )
 {
-	static char buf[ 2 ] = { '\0', '\0' };
+	static unsigned char buf[ 2 ] = { '\0', '\0' };
 
 	*buf = '\0';
 	*key = 0;
@@ -269,9 +313,9 @@ static const char *IN_TranslateSDLToQ3Key( SDL_keysym *keysym,
 		}
 	}
 
-	if( down && keysym->unicode && !( keysym->unicode & 0xFF80 ) )
+	if( down && keysym->unicode && !( keysym->unicode & 0xFF00 ) )
 	{
-		char ch = (char)keysym->unicode & 0x7F;
+		unsigned char ch = (unsigned char)keysym->unicode & 0xFF;
 
 		switch( ch )
 		{
@@ -291,14 +335,29 @@ static const char *IN_TranslateSDLToQ3Key( SDL_keysym *keysym,
 	if( in_keyboardDebug->integer )
 		IN_PrintKey( keysym, *key, down );
 
-	if( IN_IsConsoleKey( *key, buf ) )
+	// Keys that have ASCII names but produce no character are probably
+	// dead keys -- ignore them
+	if( down && strlen( Key_KeynumToString( *key ) ) == 1 &&
+		keysym->unicode == 0 )
+	{
+		if( in_keyboardDebug->integer )
+			Com_Printf( "  Ignored dead key '%c'\n", *key );
+
+		*key = 0;
+	}
+
+	if( IN_IsConsoleKey( *key, *buf ) )
 	{
 		// Console keys can't be bound or generate characters
 		*key = K_CONSOLE;
 		*buf = '\0';
 	}
 
-	return buf;
+	// Don't allow extended ASCII to generate characters
+	if( *buf & 0x80 )
+		*buf = '\0';
+
+	return (char *)buf;
 }
 
 #ifdef MACOS_X_ACCELERATION_HACK
@@ -775,7 +834,7 @@ IN_ProcessEvents
 static void IN_ProcessEvents( void )
 {
 	SDL_Event e;
-	const char *p = NULL;
+	const char *character = NULL;
 	keyNum_t key = 0;
 
 	if( !SDL_WasInit( SDL_INIT_VIDEO ) )
@@ -798,20 +857,19 @@ static void IN_ProcessEvents( void )
 		switch( e.type )
 		{
 			case SDL_KEYDOWN:
-				p = IN_TranslateSDLToQ3Key( &e.key.keysym, &key, qtrue );
+				character = IN_TranslateSDLToQ3Key( &e.key.keysym, &key, qtrue );
 				if( key )
 					Com_QueueEvent( 0, SE_KEY, key, qtrue, 0, NULL );
 
-				if( p )
-				{
-					while( *p )
-						Com_QueueEvent( 0, SE_CHAR, *p++, 0, 0, NULL );
-				}
+				if( character )
+					Com_QueueEvent( 0, SE_CHAR, *character, 0, 0, NULL );
 				break;
 
 			case SDL_KEYUP:
 				IN_TranslateSDLToQ3Key( &e.key.keysym, &key, qfalse );
-				Com_QueueEvent( 0, SE_KEY, key, qfalse, 0, NULL );
+
+				if( key )
+					Com_QueueEvent( 0, SE_KEY, key, qfalse, 0, NULL );
 				break;
 
 			case SDL_MOUSEMOTION:

@@ -38,6 +38,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define CLIENT_WINDOW_MIN_TITLE   "Tremulous" " (FSM-" CODENAME ")"
 #define Q3_VERSION                 PRODUCT_NAME PRODUCT_VERSION " (FSM-" CODENAME ") "
 
+#define GAMENAME BASEGAME
+#define GAMENAME_FOR_MASTER GAMENAME
+
 #define MAX_TEAMNAME 32
 
 #ifdef _MSC_VER
@@ -702,6 +705,7 @@ void SkipRestOfLine ( char **data );
 void Parse1DMatrix (char **buf_p, int x, float *m);
 void Parse2DMatrix (char **buf_p, int y, int x, float *m);
 void Parse3DMatrix (char **buf_p, int z, int y, int x, float *m);
+int Com_HexStrToInt( const char *str );
 
 void	QDECL Com_sprintf (char *dest, int size, const char *fmt, ...) __attribute__ ((format (printf, 3, 4)));
 
