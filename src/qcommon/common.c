@@ -2730,6 +2730,7 @@ void Com_Frame( void ) {
 		msec = com_frameTime - lastTime;
 	} while ( msec < minMsec );
 	Cbuf_Execute ();
+	Cdelay_Frame ();
 
 	// write config file if anything changed
 	Com_WriteConfiguration();
