@@ -331,8 +331,7 @@ void CL_ParseSnapshot( msg_t *msg ) {
 
         ps = &cl.snap.ps;
 
-        Cvar_SetValue( "p_hp", ps->stats[ STAT_HEALTH ] );
-        Cvar_Set( "p_currenthp", va( "%i/%i", ps->stats[ STAT_HEALTH ], ps->stats[ STAT_MAX_HEALTH ] ) );	
+        Cvar_Set( "p_hp", va( "%i/%i", ps->stats[ STAT_HEALTH ], ps->stats[ STAT_MAX_HEALTH ] ) );	
         Cvar_SetValue( "p_team", ps->stats[ STAT_TEAM ] );
 	Cvar_SetValue( "p_class", ps->stats[ STAT_CLASS ] );
 
