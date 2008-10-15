@@ -475,7 +475,8 @@ void SV_SpawnServer( char *server, qboolean killBots ) {
 
 	// set serverinfo visible name
 	Cvar_Set( "mapname", server );
-
+	Cvar_Set( "sv_mapname", server );
+	
 	Cvar_Set( "sv_mapChecksum", va("%i",checksum) );
 
 	// serverid should be different each time
