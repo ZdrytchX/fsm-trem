@@ -206,16 +206,11 @@ qint64 Long64NoSwap (qint64 ll)
 	return ll;
 }
 
-typedef union {
-    float	f;
-    unsigned int i;
-} _FloatByteUnion;
-
 float FloatSwap (const float *f) {
-	_FloatByteUnion out;
+	floatint_t out;
 
 	out.f = *f;
-	out.i = LongSwap(out.i);
+	out.ui = LongSwap(out.ui);
 
 	return out.f;
 }
@@ -716,11 +711,12 @@ qboolean Q_isanumber( const char *s )
 	return qfalse;
 #else
 	char *p;
+	double d;
 
 	if( *s == '\0' )
 		return qfalse;
 
-	strtod( s, &p );
+	d = strtod( s, &p );
 
 	return *p == '\0';
 #endif

@@ -803,8 +803,8 @@ void CL_WritePacket( void ) {
 					}
 				}
 			} else {
-				clc.voipTarget1 = clc.voipTarget2 = clc.voipTarget3 = 0;
 				const char *ptr = target;
+				clc.voipTarget1 = clc.voipTarget2 = clc.voipTarget3 = 0;
 				do {
 					if ((*ptr == ',') || (*ptr == '\0')) {
 						const int val = atoi(target);

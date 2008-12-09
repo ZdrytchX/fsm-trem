@@ -66,6 +66,9 @@ export PLATFORM
 ifeq ($(COMPILE_ARCH),powerpc)
   COMPILE_ARCH=ppc
 endif
+ifeq ($(COMPILE_ARCH),powerpc64)
+  COMPILE_ARCH=ppc64
+endif
 
 ifndef ARCH
 ARCH=$(COMPILE_ARCH)
@@ -291,7 +294,11 @@ ifeq ($(PLATFORM),linux)
   else
   ifeq ($(ARCH),ppc)
     BASE_CFLAGS += -maltivec
-    HAVE_VM_COMPILED=false
+    HAVE_VM_COMPILED=true
+  endif
+  ifeq ($(ARCH),ppc64)
+    BASE_CFLAGS += -maltivec
+    HAVE_VM_COMPILED=true
   endif
   endif
   endif
@@ -304,33 +311,33 @@ ifeq ($(PLATFORM),linux)
   SHLIBCFLAGS=-fPIC
   SHLIBLDFLAGS=-shared $(LDFLAGS)
 
-  THREAD_LDFLAGS=-lpthread
-  LDFLAGS=-ldl -lm
+  THREAD_LIBS=-lpthread
+  LIBS=-ldl -lm
 
-  CLIENT_LDFLAGS=$(shell sdl-config --libs) -lGL
+  CLIENT_LIBS=$(shell sdl-config --libs) -lGL
 
   ifeq ($(USE_OPENAL),1)
     ifneq ($(USE_OPENAL_DLOPEN),1)
-      CLIENT_LDFLAGS += -lopenal
+      CLIENT_LIBS += -lopenal
     endif
   endif
 
   ifeq ($(USE_CURL),1)
     ifneq ($(USE_CURL_DLOPEN),1)
-      CLIENT_LDFLAGS += -lcurl
+      CLIENT_LIBS += -lcurl
     endif
   endif
 
   ifeq ($(USE_CODEC_VORBIS),1)
-    CLIENT_LDFLAGS += -lvorbisfile -lvorbis -logg
+    CLIENT_LIBS += -lvorbisfile -lvorbis -logg
   endif
   
   ifeq ($(USE_CODEC_MP3),1)
-    CLIENT_LDFLAGS += -lmad
+    CLIENT_LIBS += -lmad
   endif
 
   ifeq ($(USE_MUMBLE),1)
-    CLIENT_LDFLAGS += -lrt
+    CLIENT_LIBS += -lrt
   endif
 
   ifeq ($(USE_LOCAL_HEADERS),1)
@@ -340,11 +347,9 @@ ifeq ($(PLATFORM),linux)
   ifeq ($(ARCH),x86)
     # linux32 make ...
     BASE_CFLAGS += -m32
-    LDFLAGS+=-m32
   else
   ifeq ($(ARCH),ppc64)
     BASE_CFLAGS += -m64
-    LDFLAGS += -m64
   endif
   endif
 
@@ -359,7 +364,7 @@ else # ifeq Linux
 
 ifeq ($(PLATFORM),darwin)
   HAVE_VM_COMPILED=true
-  CLIENT_LDFLAGS=
+  CLIENT_LIBS=
   OPTIMIZE=
   
   BASE_CFLAGS = -Wall -Wimplicit -Wstrict-prototypes
@@ -367,6 +372,9 @@ ifeq ($(PLATFORM),darwin)
   ifeq ($(ARCH),ppc)
     BASE_CFLAGS += -faltivec
     OPTIMIZE += -O3
+  endif
+  ifeq ($(ARCH),ppc64)
+   BASE_CFLAGS += -faltivec
   endif
   ifeq ($(ARCH),x86)
     OPTIMIZE += -march=prescott -mfpmath=sse
@@ -380,7 +388,7 @@ ifeq ($(PLATFORM),darwin)
   ifeq ($(USE_OPENAL),1)
     BASE_CFLAGS += -DUSE_OPENAL
     ifneq ($(USE_OPENAL_DLOPEN),1)
-      CLIENT_LDFLAGS += -framework OpenAL
+      CLIENT_LIBS += -framework OpenAL
     else
       BASE_CFLAGS += -DUSE_OPENAL_DLOPEN
     endif
@@ -389,7 +397,7 @@ ifeq ($(PLATFORM),darwin)
   ifeq ($(USE_CURL),1)
     BASE_CFLAGS += -DUSE_CURL
     ifneq ($(USE_CURL_DLOPEN),1)
-      CLIENT_LDFLAGS += -lcurl
+      CLIENT_LIBS += -lcurl
     else
       BASE_CFLAGS += -DUSE_CURL_DLOPEN
     endif
@@ -397,12 +405,12 @@ ifeq ($(PLATFORM),darwin)
 
   ifeq ($(USE_CODEC_VORBIS),1)
     BASE_CFLAGS += -DUSE_CODEC_VORBIS
-   # CLIENT_LDFLAGS += -lvorbisfile -lvorbis -logg
+   # CLIENT_LIBS += -lvorbisfile -lvorbis -logg
   endif
   
   ifeq ($(USE_CODEC_MP3),1)
     BASE_CFLAGS += -DUSE_CODEC_MP3=1
-   # CLIENT_LDFLAGS += -lmad
+   # CLIENT_LIBS += -lmad
   endif
 
   BASE_CFLAGS += -D_THREAD_SAFE=1
@@ -416,7 +424,7 @@ ifeq ($(PLATFORM),darwin)
   #  the file has been modified by each build.
   LIBSDLMAIN=$(B)/libSDLmain.a
   LIBSDLMAINSRC=$(LIBSDIR)/macosx/libSDLmain.a
-  CLIENT_LDFLAGS += -framework Cocoa -framework IOKit -framework OpenGL \
+  CLIENT_LIBS += -framework Cocoa -framework IOKit -framework OpenGL \
     $(LIBSDIR)/macosx/libSDL-1.2.0.dylib
   
   ifeq ($(USE_CODEC_MP3),1)
@@ -530,8 +538,9 @@ ifeq ($(PLATFORM),mingw32)
 
   BINEXT=.exe
 
-  LDFLAGS= -lws2_32 -lwinmm
-  CLIENT_LDFLAGS = -mwindows -lgdi32 -lole32 -lopengl32
+  LIBS= -lws2_32 -lwinmm
+  CLIENT_LDFLAGS = -mwindows
+  CLIENT_LIBS = -lgdi32 -lole32 -lopengl32
 
   ifeq ($(USE_CURL),1)
     BASE_CFLAGS += -DUSE_CURL
@@ -539,39 +548,38 @@ ifeq ($(PLATFORM),mingw32)
     ifneq ($(USE_CURL_DLOPEN),1)
       ifeq ($(USE_LOCAL_HEADERS),1)
         BASE_CFLAGS += -DCURL_STATICLIB
-        CLIENT_LDFLAGS += $(LIBSDIR)/win32/libcurl.a
+        CLIENT_LIBS += $(LIBSDIR)/win32/libcurl.a
       else
-        CLIENT_LDFLAGS += $(CURL_LIBS)
+        CLIENT_LIBS += $(CURL_LIBS)
       endif
     endif
   endif
 
   ifeq ($(USE_CODEC_VORBIS),1)
-    CLIENT_LDFLAGS += -lvorbisfile -lvorbis -logg
+    CLIENT_LIBS += -lvorbisfile -lvorbis -logg
   endif
   
   ifeq ($(USE_CODEC_MP3),1)
-    CLIENT_LDFLAGS += -lmad
+    CLIENT_LIBS += -lmad
   endif
 
   ifeq ($(ARCH),x86)
     # build 32bit
     BASE_CFLAGS += -m32
-    LDFLAGS+=-m32
   endif
 
   DEBUG_CFLAGS=$(BASE_CFLAGS) -g -O0
   RELEASE_CFLAGS=$(BASE_CFLAGS) -DNDEBUG $(OPTIMIZE)
 
   # libmingw32 must be linked before libSDLmain
-  CLIENT_LDFLAGS += -lmingw32
+  CLIENT_LIBS += -lmingw32
   ifeq ($(USE_LOCAL_HEADERS),1)
     BASE_CFLAGS += -I$(SDLHDIR)/include
-    CLIENT_LDFLAGS += $(LIBSDIR)/win32/libSDLmain.a \
+    CLIENT_LIBS += $(LIBSDIR)/win32/libSDLmain.a \
                       $(LIBSDIR)/win32/libSDL.dll.a
   else
     BASE_CFLAGS += $(SDL_CFLAGS)
-    CLIENT_LDFLAGS += $(SDL_LIBS)
+    CLIENT_LIBS += $(SDL_LIBS)
   endif
 
 
@@ -633,22 +641,22 @@ ifeq ($(PLATFORM),freebsd)
   SHLIBCFLAGS=-fPIC
   SHLIBLDFLAGS=-shared $(LDFLAGS)
 
-  THREAD_LDFLAGS=-lpthread
+  THREAD_LIBS=-lpthread
   # don't need -ldl (FreeBSD)
-  LDFLAGS=-lm
+  LIBS=-lm
 
-  CLIENT_LDFLAGS =
+  CLIENT_LIBS =
 
-  CLIENT_LDFLAGS += $(shell sdl-config --libs) -lGL
+  CLIENT_LIBS += $(shell sdl-config --libs) -lGL
 
   ifeq ($(USE_OPENAL),1)
     ifneq ($(USE_OPENAL_DLOPEN),1)
-      CLIENT_LDFLAGS += $(THREAD_LDFLAGS) -lopenal
+      CLIENT_LIBS += $(THREAD_LIBS) -lopenal
     endif
   endif
 
   ifeq ($(USE_CODEC_VORBIS),1)
-    CLIENT_LDFLAGS += -lvorbisfile -lvorbis -logg
+    CLIENT_LIBS += -lvorbisfile -lvorbis -logg
   endif
   
   ifeq ($(USE_CODEC_MP3),1)
@@ -698,21 +706,21 @@ ifeq ($(PLATFORM),openbsd)
   SHLIBCFLAGS=-fPIC
   SHLIBLDFLAGS=-shared $(LDFLAGS)
 
-  THREAD_LDFLAGS=-lpthread
-  LDFLAGS=-lm
+  THREAD_LIBS=-lpthread
+  LIBS=-lm
 
-  CLIENT_LDFLAGS =
+  CLIENT_LIBS =
 
-  CLIENT_LDFLAGS += $(shell sdl-config --libs) -lGL
+  CLIENT_LIBS += $(shell sdl-config --libs) -lGL
 
   ifeq ($(USE_OPENAL),1)
     ifneq ($(USE_OPENAL_DLOPEN),1)
-      CLIENT_LDFLAGS += $(THREAD_LDFLAGS) -lossaudio -lopenal
+      CLIENT_LIBS += $(THREAD_LIBS) -lossaudio -lopenal
     endif
   endif
 
   ifeq ($(USE_CODEC_VORBIS),1)
-    CLIENT_LDFLAGS += -lvorbisfile -lvorbis -logg
+    CLIENT_LIBS += -lvorbisfile -lvorbis -logg
   endif
   
   ifeq ($(USE_CODEC_MP3),1)
@@ -731,11 +739,11 @@ ifeq ($(PLATFORM),netbsd)
     ARCH=x86
   endif
 
-  LDFLAGS=-lm
+  LIBS=-lm
   SHLIBEXT=so
   SHLIBCFLAGS=-fPIC
   SHLIBLDFLAGS=-shared $(LDFLAGS)
-  THREAD_LDFLAGS=-lpthread
+  THREAD_LIBS=-lpthread
 
   BASE_CFLAGS = -Wall -fno-strict-aliasing -Wimplicit -Wstrict-prototypes
 
@@ -767,9 +775,9 @@ ifeq ($(PLATFORM),irix64)
   SHLIBCFLAGS=
   SHLIBLDFLAGS=-shared
 
-  LDFLAGS=-ldl -lm -lgen
+  LIBS=-ldl -lm -lgen
   # FIXME: The X libraries probably aren't necessary?
-  CLIENT_LDFLAGS=-L/usr/X11/$(LIB) $(shell sdl-config --libs) -lGL \
+  CLIENT_LIBS=-L/usr/X11/$(LIB) $(shell sdl-config --libs) -lGL \
     -lX11 -lXext -lm
 
 else # ifeq IRIX
@@ -815,7 +823,6 @@ ifeq ($(PLATFORM),sunos)
       -falign-functions=2 -fstrength-reduce
     HAVE_VM_COMPILED=true
     BASE_CFLAGS += -m32
-    LDFLAGS += -m32
     BASE_CFLAGS += -I/usr/X11/include/NVIDIA
     CLIENT_LDFLAGS += -L/usr/X11/lib/NVIDIA -R/usr/X11/lib/NVIDIA
   endif
@@ -833,12 +840,12 @@ ifeq ($(PLATFORM),sunos)
   SHLIBCFLAGS=-fPIC
   SHLIBLDFLAGS=-shared $(LDFLAGS)
 
-  THREAD_LDFLAGS=-lpthread
-  LDFLAGS=-lsocket -lnsl -ldl -lm
+  THREAD_LIBS=-lpthread
+  LIBS=-lsocket -lnsl -ldl -lm
 
   BOTCFLAGS=-O0
 
-  CLIENT_LDFLAGS +=$(shell sdl-config --libs) -lGL
+  CLIENT_LIBS +=$(shell sdl-config --libs) -lGL
 
 else # ifeq sunos
 
@@ -884,7 +891,7 @@ ifeq ($(USE_VOIP),1)
   ifeq ($(USE_INTERNAL_SPEEX),1)
     BASE_CFLAGS += -DFLOATING_POINT -DUSE_ALLOCA -I$(SPEEXDIR)/include
   else
-    CLIENT_LDFLAGS += -lspeex
+    CLIENT_LIBS += -lspeex
   endif
 endif
 
@@ -991,19 +998,25 @@ targets: makedirs
 	@echo "  CC: $(CC)"
 	@echo ""
 	@echo "  CFLAGS:"
-	@for i in $(CFLAGS); \
+	-@for i in $(CFLAGS); \
 	do \
 		echo "    $$i"; \
 	done
 	@echo ""
 	@echo "  LDFLAGS:"
-	@for i in $(LDFLAGS); \
+	-@for i in $(LDFLAGS); \
+	do \
+		echo "    $$i"; \
+	done
+	@echo ""
+	@echo "  LIBS:"
+	-@for i in $(LIBS); \
 	do \
 		echo "    $$i"; \
 	done
 	@echo ""
 	@echo "  Output:"
-	@for i in $(TARGETS); \
+	-@for i in $(TARGETS); \
 	do \
 		echo "    $$i"; \
 	done
@@ -1228,7 +1241,10 @@ ifeq ($(HAVE_VM_COMPILED),true)
     Q3OBJ += $(B)/client/vm_x86_64.o $(B)/client/vm_x86_64_assembler.o
   endif
   ifeq ($(ARCH),ppc)
-    Q3OBJ += $(B)/client/vm_ppc.o
+    Q3OBJ += $(B)/client/vm_powerpc.o $(B)/client/vm_powerpc_asm.o
+  endif
+  ifeq ($(ARCH),ppc64)
+    Q3OBJ += $(B)/client/vm_powerpc.o $(B)/client/vm_powerpc_asm.o
   endif
 endif
 
@@ -1254,13 +1270,15 @@ Q3POBJ_SMP += \
 
 $(B)/tremulous.$(ARCH)$(BINEXT): $(Q3OBJ) $(Q3POBJ) $(LIBSDLMAIN) $(LIBOGG) $(LIBVORBIS) $(LIBVORBISFILE) $(LIBMAD)
 	$(echo_cmd) "LD $@"
-	$(Q)$(CC) -o $@ $(Q3OBJ) $(Q3POBJ) $(CLIENT_LDFLAGS) \
-		$(LDFLAGS) $(LIBSDLMAIN) $(LIBOGG) $(LIBVORBIS) $(LIBVORBISFILE) $(LIBMAD)
+	$(Q)$(CC) $(CLIENT_CFLAGS) $(CFLAGS) $(CLIENT_LDFLAGS) $(LDFLAGS) \
+		-o $@ $(Q3OBJ) $(Q3POBJ) \
+		$(LIBSDLMAIN) $(CLIENT_LIBS) $(LIBS)  $(LIBOGG) $(LIBVORBIS) $(LIBVORBISFILE) $(LIBMAD)
 
 $(B)/tremulous-smp.$(ARCH)$(BINEXT): $(Q3OBJ) $(Q3POBJ_SMP) $(LIBSDLMAIN) $(LIBOGG) $(LIBVORBIS) $(LIBVORBISFILE) $(LIBMAD)
 	$(echo_cmd) "LD $@"
-	$(Q)$(CC) -o $@ $(Q3OBJ) $(Q3POBJ_SMP) $(CLIENT_LDFLAGS) \
-		$(THREAD_LDFLAGS) $(LDFLAGS) $(LIBSDLMAIN) $(LIBOGG) $(LIBVORBIS) $(LIBVORBISFILE) $(LIBMAD)
+	$(Q)$(CC) $(CLIENT_CFLAGS) $(CFLAGS) $(CLIENT_LDFLAGS) $(LDFLAGS) $(THREAD_LDFLAGS) \
+		-o $@ $(Q3OBJ) $(Q3POBJ_SMP) \
+		$(CLIENT_LIBS) $(LIBSDLMAIN) $(THREAD_LIBS) $(LIBS) $(LIBOGG) $(LIBVORBIS) $(LIBVORBISFILE) $(LIBMAD)
 
 ifneq ($(strip $(LIBSDLMAIN)),)
 ifneq ($(strip $(LIBSDLMAINSRC)),)
@@ -1360,10 +1378,13 @@ ifeq ($(HAVE_VM_COMPILED),true)
     Q3DOBJ += $(B)/ded/vm_x86.o
   endif
   ifeq ($(ARCH),x86_64)
-    Q3DOBJ += $(B)/ded/vm_x86_64.o $(B)/client/vm_x86_64_assembler.o
+    Q3DOBJ += $(B)/ded/vm_x86_64.o $(B)/ded/vm_x86_64_assembler.o
   endif
   ifeq ($(ARCH),ppc)
-    Q3DOBJ += $(B)/ded/vm_ppc.o
+    Q3DOBJ += $(B)/ded/vm_powerpc.o $(B)/ded/vm_powerpc_asm.o
+  endif
+  ifeq ($(ARCH),ppc64)
+    Q3DOBJ += $(B)/ded/vm_powerpc.o $(B)/ded/vm_powerpc_asm.o
   endif
 endif
 
@@ -1380,7 +1401,7 @@ endif
 
 $(B)/tremded.$(ARCH)$(BINEXT): $(Q3DOBJ)
 	$(echo_cmd) "LD $@"
-	$(Q)$(CC) -o $@ $(Q3DOBJ) $(LDFLAGS)
+	$(Q)$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(Q3DOBJ) $(LIBS)
 
 
 #############################################################################
