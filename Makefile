@@ -363,6 +363,8 @@ else # ifeq Linux
 #############################################################################
 
 ifeq ($(PLATFORM),darwin)
+  USE_CODEC_VORBIS=1
+  USE_CODEC_MP3=1
   HAVE_VM_COMPILED=true
   CLIENT_LIBS=
   OPTIMIZE=
@@ -405,12 +407,10 @@ ifeq ($(PLATFORM),darwin)
 
   ifeq ($(USE_CODEC_VORBIS),1)
     BASE_CFLAGS += -DUSE_CODEC_VORBIS
-   # CLIENT_LIBS += -lvorbisfile -lvorbis -logg
   endif
   
   ifeq ($(USE_CODEC_MP3),1)
     BASE_CFLAGS += -DUSE_CODEC_MP3=1
-   # CLIENT_LIBS += -lmad
   endif
 
   BASE_CFLAGS += -D_THREAD_SAFE=1
@@ -430,7 +430,6 @@ ifeq ($(PLATFORM),darwin)
   ifeq ($(USE_CODEC_MP3),1)
 	LIBMADSRC=$(LIBSDIR)/macosx/libmad.a
 	LIBMAD=$(B)/libmad.a
-	CLIENT_LDFLAGS += $(LIBSDIR)/macosx/libmad.0.2.1.dylib
   endif
   
   ifeq ($(USE_CODEC_VORBIS),1)
@@ -440,10 +439,6 @@ ifeq ($(PLATFORM),darwin)
 	LIBVORBISFILESRC=$(LIBSDIR)/macosx/libvorbisfile.a
 	LIBOGG=$(B)/libogg.a
 	LIBOGGSRC=$(LIBSDIR)/macosx/libogg.a
-	CLIENT_LDFLAGS += \
-		$(LIBSDIR)/macosx/libogg.0.5.3.dylib \
-		$(LIBSDIR)/macosx/libvorbisfile.3.2.0.dylib \
-		$(LIBSDIR)/macosx/libvorbis.0.4.0.dylib
   endif
 
   OPTIMIZE += -ffast-math -falign-loops=16
