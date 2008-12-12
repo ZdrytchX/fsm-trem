@@ -428,8 +428,7 @@ ifeq ($(PLATFORM),darwin)
     $(LIBSDIR)/macosx/libSDL-1.2.0.dylib
   
   ifeq ($(USE_CODEC_MP3),1)
-	LIBMADSRC=$(LIBSDIR)/macosx/libmad.a
-	LIBMAD=$(B)/libmad.a
+	CLIENT_LIBS += $(LIBSDIR)/macosx/libmad.0.2.1.dylib
   endif
   
   ifeq ($(USE_CODEC_VORBIS),1)
@@ -1263,29 +1262,21 @@ Q3POBJ += \
 Q3POBJ_SMP += \
   $(B)/clientsmp/sdl_glimp.o
 
-$(B)/tremulous.$(ARCH)$(BINEXT): $(Q3OBJ) $(Q3POBJ) $(LIBSDLMAIN) $(LIBOGG) $(LIBVORBIS) $(LIBVORBISFILE) $(LIBMAD)
+$(B)/tremulous.$(ARCH)$(BINEXT): $(Q3OBJ) $(Q3POBJ) $(LIBSDLMAIN) $(LIBOGG) $(LIBVORBIS) $(LIBVORBISFILE)
 	$(echo_cmd) "LD $@"
 	$(Q)$(CC) $(CLIENT_CFLAGS) $(CFLAGS) $(CLIENT_LDFLAGS) $(LDFLAGS) \
 		-o $@ $(Q3OBJ) $(Q3POBJ) \
-		$(LIBSDLMAIN) $(CLIENT_LIBS) $(LIBS)  $(LIBOGG) $(LIBVORBIS) $(LIBVORBISFILE) $(LIBMAD)
+		$(LIBSDLMAIN) $(CLIENT_LIBS) $(LIBS)  $(LIBOGG) $(LIBVORBIS) $(LIBVORBISFILE)
 
-$(B)/tremulous-smp.$(ARCH)$(BINEXT): $(Q3OBJ) $(Q3POBJ_SMP) $(LIBSDLMAIN) $(LIBOGG) $(LIBVORBIS) $(LIBVORBISFILE) $(LIBMAD)
+$(B)/tremulous-smp.$(ARCH)$(BINEXT): $(Q3OBJ) $(Q3POBJ_SMP) $(LIBSDLMAIN) $(LIBOGG) $(LIBVORBIS) $(LIBVORBISFILE)
 	$(echo_cmd) "LD $@"
 	$(Q)$(CC) $(CLIENT_CFLAGS) $(CFLAGS) $(CLIENT_LDFLAGS) $(LDFLAGS) $(THREAD_LDFLAGS) \
 		-o $@ $(Q3OBJ) $(Q3POBJ_SMP) \
-		$(CLIENT_LIBS) $(LIBSDLMAIN) $(THREAD_LIBS) $(LIBS) $(LIBOGG) $(LIBVORBIS) $(LIBVORBISFILE) $(LIBMAD)
+		$(CLIENT_LIBS) $(LIBSDLMAIN) $(THREAD_LIBS) $(LIBS) $(LIBOGG) $(LIBVORBIS) $(LIBVORBISFILE)
 
 ifneq ($(strip $(LIBSDLMAIN)),)
 ifneq ($(strip $(LIBSDLMAINSRC)),)
 $(LIBSDLMAIN) : $(LIBSDLMAINSRC)
-	cp $< $@
-	ranlib $@
-endif
-endif
-
-ifneq ($(strip $(LIBMAD)),)
-ifneq ($(strip $(LIBMADSRC)),)
-$(LIBMAD) : $(LIBMADSRC)
 	cp $< $@
 	ranlib $@
 endif
