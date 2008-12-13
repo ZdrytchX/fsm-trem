@@ -381,8 +381,10 @@ void SCR_DrawVoipSender( void ) {
 		return;  // playing back a demo.
 	else if (!cl_voip->integer)
 		return;  // client has VoIP support disabled.
-
-	sprintf( string, "Client speaking: %s^7 (%i)", cls.voipSenderStr, cls.voipSender );
+	
+	sprintf( string, "Client speaking: %s^7 (%i)",
+	Info_ValueForKey( cl.gameState.stringData + cl.gameState.stringOffsets[ cls.voipSender + CS_PLAYERS  ], "n" ),
+	cls.voipSender );
 	
 	// I hardcoded the display to be on the left side of the screen, and not to move
 	SCR_DrawStringExt( 6, 310, 12, string, g_color_table[7], qfalse, qfalse );
