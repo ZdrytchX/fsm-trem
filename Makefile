@@ -33,9 +33,9 @@ ifndef BUILD_SERVER
   BUILD_SERVER     = 1
 endif
 
-ifneq ($(PLATFORM),darwin)
-  BUILD_CLIENT_SMP = 0
-endif
+#ifneq ($(PLATFORM),darwin)
+#  BUILD_CLIENT_SMP = 0
+#endif
 
 ifndef USE_SVN
   USE_SVN          = 1

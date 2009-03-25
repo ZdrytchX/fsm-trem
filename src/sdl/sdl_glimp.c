@@ -24,6 +24,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #	include "SDL.h"
 #else
 #	include <SDL.h>
+#	ifdef SDL_VIDEO_DRIVER_X11
+#		include <X11/Xlib.h>
+#	endif
 #endif
 
 #if !SDL_VERSION_ATLEAST(1, 2, 10)
@@ -50,20 +53,97 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "../client/client.h"
 #include "../sys/sys_local.h"
 #include "sdl_icon.h"
+#include "SDL_syswm.h"
 
 /* Just hack it for now. */
 #ifdef MACOS_X
 #include <OpenGL/OpenGL.h>
 typedef CGLContextObj QGLContext;
-#define GLimp_GetCurrentContext() CGLGetCurrentContext()
-#define GLimp_SetCurrentContext(ctx) CGLSetCurrentContext(ctx)
-#else
-typedef void *QGLContext;
-#define GLimp_GetCurrentContext() (NULL)
-#define GLimp_SetCurrentContext(ctx)
-#endif
 
 static QGLContext opengl_context;
+
+static void GLimp_GetCurrentContext(void)
+{
+	opengl_context = CGLGetCurrentContext();
+}
+
+#ifdef SMP
+static void GLimp_SetCurrentContext(qboolean enable)
+{
+	if(enable)
+		CGLSetCurrentContext(opengl_context);
+	else
+		CGLSetCurrentContext(NULL);
+}
+#endif
+#elif SDL_VIDEO_DRIVER_X11
+#include <GL/glx.h>
+typedef struct
+{
+	GLXContext      ctx;
+	Display         *dpy;
+	GLXDrawable     drawable;
+} QGLContext_t;
+typedef QGLContext_t QGLContext;
+
+static QGLContext opengl_context;
+
+static void GLimp_GetCurrentContext(void)
+{
+	opengl_context.ctx = glXGetCurrentContext();
+	opengl_context.dpy = glXGetCurrentDisplay();
+	opengl_context.drawable = glXGetCurrentDrawable();
+}
+
+#ifdef SMP
+static void GLimp_SetCurrentContext(qboolean enable)
+{
+	if(enable)
+		glXMakeCurrent(opengl_context.dpy, opengl_context.drawable, opengl_context.ctx);
+	else
+		glXMakeCurrent(opengl_context.dpy, None, NULL);
+}
+#endif
+#elif WIN32
+typedef struct
+{
+	HDC             hDC;		// handle to device context
+	HGLRC           hGLRC;		// handle to GL rendering context
+} QGLContext_t;
+typedef QGLContext_t QGLContext;
+
+static QGLContext opengl_context;
+
+static void GLimp_GetCurrentContext(void)
+{
+	SDL_SysWMinfo info;
+
+	SDL_VERSION(&info.version);
+	if(!SDL_GetWMInfo(&info))
+	{
+		ri.Printf(PRINT_WARNING, "Failed to obtain HWND from SDL (InputRegistry)");
+		return;
+	}
+
+	opengl_context.hDC = GetDC(info.window);
+	opengl_context.hGLRC = info.hglrc;
+}
+
+#ifdef SMP
+static void GLimp_SetCurrentContext(qboolean enable)
+{
+	if(enable)
+		wglMakeCurrent(opengl_context.hDC, opengl_context.hGLRC);
+	else
+		wglMakeCurrent(opengl_context.hDC, NULL);
+}
+#endif
+#else
+static void GLimp_GetCurrentContext(void) {}
+#ifdef SMP
+static void GLimp_SetCurrentContext(qboolean enable) {}
+#endif
+#endif
 
 typedef enum
 {
@@ -214,6 +294,7 @@ static int GLimp_SetMode( int mode, qboolean fullscreen )
 	int i = 0;
 	SDL_Surface *vidscreen = NULL;
 	Uint32 flags = SDL_OPENGL;
+	static int desktop_w, desktop_h;  // desktop resolution 
 
 	ri.Printf( PRINT_DEVELOPER, "Initializing OpenGL display\n");
 
@@ -240,7 +321,11 @@ static int GLimp_SetMode( int mode, qboolean fullscreen )
 		// Guess the display aspect ratio through the desktop resolution
 		// by assuming (relatively safely) that it is set at or close to
 		// the display's native aspect ratio
-		glConfig.displayAspect = (float)videoInfo->current_w / (float)videoInfo->current_h;
+		if( !desktop_w ) { // first time through, resolve desktop resolution
+			desktop_w = videoInfo->current_w;
+			desktop_h = videoInfo->current_h;
+		}
+		glConfig.displayAspect = (float)desktop_w / (float)desktop_h;
 
 		ri.Printf( PRINT_DEVELOPER, "Estimated display aspect: %.3f\n", glConfig.displayAspect );
 	}
@@ -397,7 +482,7 @@ static int GLimp_SetMode( int mode, qboolean fullscreen )
 			continue;
 		}
 
-		opengl_context = GLimp_GetCurrentContext();
+		GLimp_GetCurrentContext();
 
 		ri.Printf( PRINT_DEVELOPER, "Using %d/%d/%d Color bits, %d depth, %d stencil display.\n",
 				sdlcolorbits, sdlcolorbits, sdlcolorbits, tdepthbits, tstencilbits);
@@ -669,6 +754,10 @@ void GLimp_Init( void )
 
 	Sys_GLimpInit( );
 
+#if defined(SMP) && defined(SDL_VIDEO_DRIVER_X11)
+	XInitThreads( );
+#endif
+
 	// create the window and set up the context
 	if( !GLimp_StartDriverAndSetMode( r_mode->integer, r_fullscreen->integer ) )
 	{
@@ -822,13 +911,14 @@ GLimp_RenderThreadWrapper
 */
 static int GLimp_RenderThreadWrapper( void *arg )
 {
-	Com_Printf( "Render thread starting\n" );
+	// These printfs cause race conditions which mess up the console output
+	//Com_Printf( "Render thread starting\n" );
 
 	glimpRenderThread();
 
-	GLimp_SetCurrentContext(NULL);
+	GLimp_SetCurrentContext(qfalse);
 
-	Com_Printf( "Render thread terminating\n" );
+	//Com_Printf( "Render thread terminating\n" );
 
 	return 0;
 }
@@ -847,7 +937,7 @@ qboolean GLimp_SpawnRenderThread( void (*function)( void ) )
 		warned = qtrue;
 	}
 
-#ifndef MACOS_X
+#if !defined(MACOS_X) && !defined(WIN32) && !defined (SDL_VIDEO_DRIVER_X11)
 	return qfalse;  /* better safe than sorry for now. */
 #endif
 
@@ -917,7 +1007,7 @@ void *GLimp_RendererSleep( void )
 {
 	void  *data = NULL;
 
-	GLimp_SetCurrentContext(NULL);
+	GLimp_SetCurrentContext(qfalse);
 
 	SDL_LockMutex(smpMutex);
 	{
@@ -934,7 +1024,7 @@ void *GLimp_RendererSleep( void )
 	}
 	SDL_UnlockMutex(smpMutex);
 
-	GLimp_SetCurrentContext(opengl_context);
+	GLimp_SetCurrentContext(qtrue);
 
 	return data;
 }
@@ -953,7 +1043,7 @@ void GLimp_FrontEndSleep( void )
 	}
 	SDL_UnlockMutex(smpMutex);
 
-	GLimp_SetCurrentContext(opengl_context);
+	GLimp_SetCurrentContext(qtrue);
 }
 
 /*
@@ -963,7 +1053,7 @@ GLimp_WakeRenderer
 */
 void GLimp_WakeRenderer( void *data )
 {
-	GLimp_SetCurrentContext(NULL);
+	GLimp_SetCurrentContext(qfalse);
 
 	SDL_LockMutex(smpMutex);
 	{
