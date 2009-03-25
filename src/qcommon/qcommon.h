@@ -431,6 +431,7 @@ char	*Cmd_ArgsFrom( int arg );
 void	Cmd_ArgsBuffer( char *buffer, int bufferLength );
 void	Cmd_LiteralArgsBuffer( char *buffer, int bufferLength );
 char	*Cmd_Cmd (void);
+void	Cmd_Args_Sanitize( void );
 char    *Cmd_EscapeString(const char *in);
 // The functions that execute commands get their parameters with these
 // functions. Cmd_Argv () will return an empty string, not a NULL
