@@ -22,11 +22,11 @@ ifndef BUILD_STANDALONE
 endif
 
 ifndef BUILD_CLIENT
-  BUILD_CLIENT     = 1
+  BUILD_CLIENT     = 0
 endif
 
 ifndef BUILD_CLIENT_SMP
-  BUILD_CLIENT_SMP = 1
+  BUILD_CLIENT_SMP = 0
 endif
 
 ifndef BUILD_SERVER
@@ -316,7 +316,7 @@ ifeq ($(PLATFORM),linux)
   SHLIBLDFLAGS=-shared $(LDFLAGS)
 
   THREAD_LIBS=-lpthread
-  LIBS=-ldl -lm
+  LIBS=-ldl -lm $(shell mysql_config --libs)
 
   CLIENT_LIBS=$(shell sdl-config --libs) -lGL
 
@@ -1328,6 +1328,7 @@ Q3DOBJ = \
   $(B)/ded/sv_net_chan.o \
   $(B)/ded/sv_snapshot.o \
   $(B)/ded/sv_world.o \
+  $(B)/ded/sv_mysql.o \
   \
   $(B)/ded/cm_load.o \
   $(B)/ded/cm_patch.o \

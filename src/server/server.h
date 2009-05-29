@@ -282,6 +282,13 @@ extern	cvar_t	*sv_dequeuePeriod;
 extern	cvar_t	*sv_demoState;
 extern	cvar_t	*sv_autoDemo;
 
+extern cvar_t *sv_mysql;
+extern cvar_t *sv_mysqlhost;
+extern cvar_t *sv_mysqldatabase;
+extern cvar_t *sv_mysqlusername;
+extern cvar_t *sv_mysqlpassword;
+
+
 extern	cvar_t	*sv_minclPing;
 #ifdef USE_VOIP
 extern	cvar_t	*sv_voip;
@@ -306,7 +313,16 @@ void SV_MasterShutdown (void);
 void SV_MasterGameStat( const char *data );
 
 
-
+//
+// sv_mysql.c
+//
+void sv_mysql_init( void );
+void sv_mysql_shutdown( void );
+qboolean sv_mysql_runquery( char *query );
+void sv_mysql_finishquery( void );
+qboolean sv_mysql_fetchrow( void );
+void sv_mysql_fetchfieldbyID( int id, char *buffer, int len );
+void sv_mysql_fetchfieldbyName( const char *name, char *buffer, int len );
 
 //
 // sv_init.c

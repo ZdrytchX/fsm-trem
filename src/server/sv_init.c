@@ -592,6 +592,7 @@ void SV_SpawnServer( char *server, qboolean killBots ) {
 			now.tm_sec,
 			server ) );
 	}
+        
 }
 
 /*
@@ -661,6 +662,7 @@ void SV_Init (void) {
 	sv_autoDemo = Cvar_Get ("sv_autoDemo", "0", CVAR_ARCHIVE );
 	
 	sv_minclPing = Cvar_Get ("sv_minclPing", "0", CVAR_ARCHIVE );
+        sv_mysql_init();
 }
 
 
@@ -744,5 +746,7 @@ void SV_Shutdown( char *finalmsg ) {
 	// disconnect any local clients
 	if( sv_killserver->integer != 2 )
 		CL_Disconnect( qfalse );
+        
+        sv_mysql_shutdown();
 }
 
