@@ -24,6 +24,7 @@ void sv_mysql_init( void ) {
     Com_Printf( "^3WARNING:^7 MySQL loading failed: %s^7\n", mysql_error( connection ) );
     Cvar_Set( "sv_mysql", "0" );
   }
+
   Com_Printf( "MySQL loaded version: %s\n", mysql_get_client_info() );
   Cvar_Set( "sv_mysql", "1" );
 }
@@ -48,19 +49,45 @@ qboolean sv_mysql_runquery( char *query ) {
 
 void sv_mysql_finishquery( void ) {
   if( sv_mysql->integer == 1 ) {
-    mysql_free_result( results );
+    if( results ) {
+      mysql_free_result( results );
+    }
+  }
+}
+
+void sv_mysql_cleanstring( const char *in, char *out, int len ) {
+  if( sv_mysql->integer == 1 ) {
+    mysql_real_escape_string( connection, out, in, len );
   }
 }
 
 qboolean sv_mysql_fetchrow( void ) {
   if( sv_mysql->integer == 1 ) {
-    row = mysql_fetch_row( results );
-    if( !row ) {
-      return qfalse;
+    if( results ) {
+      row = mysql_fetch_row( results );
+      if( !row ) {
+        return qfalse;
+      }
+      return qtrue;
     }
-    return qtrue;
   }
   return qfalse;
+}
+
+int sv_mysql_rowcount( void ) {
+  if( sv_mysql->integer == 1 ) {
+    if( results ) {
+      return mysql_num_rows( results );
+    }
+  }
+  return -1;
+}
+
+int sv_mysql_affectedrows( void ) {
+  if( sv_mysql->integer == 1 ) {
+    return mysql_affected_rows( connection );
+  }
+  return -1;
 }
 
 void sv_mysql_fetchfieldbyID( int id, char *buffer, int len ) {
@@ -79,14 +106,30 @@ void sv_mysql_fetchfieldbyName( const char *name, char *buffer, int len ) {
   int i;
 
   if( sv_mysql->integer == 1 ) {
-    num_fields = mysql_num_fields( results );
-    fields = mysql_fetch_fields( results );
+    if( results ) {
+      num_fields = mysql_num_fields( results );
+      fields = mysql_fetch_fields( results );
 
-    for( i = 0; i < num_fields; i++ ) {
-      if( !strcmp( fields[i].name, name ) ) {
-        Q_strncpyz( buffer, row[ i ], len );
-        return;
+      for( i = 0; i < num_fields; i++ ) {
+        if( !strcmp( fields[i].name, name ) ) {
+          if( row[ i ] ) {
+            Q_strncpyz( buffer, row[ i ], len );
+            return;
+          }
+        }
       }
     }
   }
+}
+
+int sv_mysql_fieldcount( void ) {
+  int num_fields;
+
+  if( sv_mysql->integer == 1 ) {
+    if( results ) {
+      num_fields = mysql_num_fields( results );
+      return num_fields;
+    }
+  }
+  return 0;
 }

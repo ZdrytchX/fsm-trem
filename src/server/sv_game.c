@@ -495,22 +495,36 @@ intptr_t SV_GameSystemCalls( intptr_t *args ) {
 	case TRAP_CEIL:
 		return FloatAsInt( ceil( VMF(1) ) );
 
-        case G_SQL_RUNQUERY:
-                return sv_mysql_runquery( VMA(1) );
+	case G_SQL_RUNQUERY:
+		return sv_mysql_runquery( VMA(1) );
 
-        case G_SQL_FINISHQUERY:
-                sv_mysql_finishquery();
-                return 0;
+	case G_SQL_FINISHQUERY:
+		sv_mysql_finishquery();
+		return 0;
 
-        case G_SQL_FETCHROW:
-                return sv_mysql_fetchrow();
+	case G_SQL_CLEANSTRING:
+		sv_mysql_cleanstring( VMA(1), VMA(2), args[3] );
+		return 0;
 
-        case G_SQL_FETCHFIELDBYID:
-                sv_mysql_fetchfieldbyID( args[1], VMA(2), args[3] );
-                return 0;
-        case G_SQL_FETCHFIELDBYNAME:
-                sv_mysql_fetchfieldbyName( VMA(1), VMA(2), args[3] );
-                return 0;
+	case G_SQL_FETCHROW:
+		return sv_mysql_fetchrow();
+
+	case G_SQL_ROWCOUNT:
+		return sv_mysql_rowcount();
+
+	case G_SQL_AFFECTEDROWS:
+		return sv_mysql_affectedrows();
+
+	case G_SQL_FETCHFIELDBYID:
+		sv_mysql_fetchfieldbyID( args[1], VMA(2), args[3] );
+		return 0;
+
+	case G_SQL_FETCHFIELDBYNAME:
+		sv_mysql_fetchfieldbyName( VMA(1), VMA(2), args[3] );
+		return 0;
+
+	case G_SQL_FIELDCOUNT:
+		return sv_mysql_fieldcount();
 
 	default:
 		Com_Error( ERR_DROP, "Bad game system trap: %ld", (long int) args[0] );

@@ -320,9 +320,14 @@ void sv_mysql_init( void );
 void sv_mysql_shutdown( void );
 qboolean sv_mysql_runquery( char *query );
 void sv_mysql_finishquery( void );
+void sv_mysql_cleanstring( const char *in, char *out, int len );
 qboolean sv_mysql_fetchrow( void );
+int sv_mysql_rowcount( void );
+int sv_mysql_affectedrows( void );
 void sv_mysql_fetchfieldbyID( int id, char *buffer, int len );
 void sv_mysql_fetchfieldbyName( const char *name, char *buffer, int len );
+int sv_mysql_fieldcount( void );
+
 
 //
 // sv_init.c
