@@ -408,8 +408,8 @@ void SV_SpawnServer( char *server, qboolean killBots ) {
 	// shut down the existing game if it is running
 	SV_ShutdownGameProgs();
 
-	//shutdown mysql
-	sv_mysql_shutdown();
+	//shutdown sql
+        DB_Shutdown();
 
 	Com_Printf ("------ Server Initialization ------\n");
 	Com_Printf ("Server: %s\n",server);
@@ -596,8 +596,8 @@ void SV_SpawnServer( char *server, qboolean killBots ) {
 			server ) );
 	}
 
-	//connect to mysql
-	sv_mysql_init();
+	//connect to sql
+        DB_Init();
 }
 
 /*
@@ -752,6 +752,6 @@ void SV_Shutdown( char *finalmsg ) {
 		CL_Disconnect( qfalse );
 
 	//shutdown mysql
-	sv_mysql_shutdown();
+        DB_Shutdown();
 }
 

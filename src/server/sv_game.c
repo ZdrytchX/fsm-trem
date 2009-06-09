@@ -496,35 +496,38 @@ intptr_t SV_GameSystemCalls( intptr_t *args ) {
 		return FloatAsInt( ceil( VMF(1) ) );
 
 	case G_SQL_RUNQUERY:
-		return sv_mysql_runquery( VMA(1) );
+		return DB_RunQuery( VMA(1) );
 
 	case G_SQL_FINISHQUERY:
-		sv_mysql_finishquery();
+		DB_FinishQuery( args[1] );
 		return 0;
 
-	case G_SQL_CLEANSTRING:
-		sv_mysql_cleanstring( VMA(1), VMA(2), args[3] );
-		return 0;
-
-	case G_SQL_FETCHROW:
-		return sv_mysql_fetchrow();
+	case G_SQL_NEXTROW:
+		return DB_NextRow( args[1] );
 
 	case G_SQL_ROWCOUNT:
-		return sv_mysql_rowcount();
+		return DB_RowCount( args[1] );
 
-	case G_SQL_AFFECTEDROWS:
-		return sv_mysql_affectedrows();
-
-	case G_SQL_FETCHFIELDBYID:
-		sv_mysql_fetchfieldbyID( args[1], VMA(2), args[3] );
+	case G_SQL_GETFIELDBYID:
+		DB_GetFieldByID( args[1], args[2], VMA(3), args[4]  );
 		return 0;
 
-	case G_SQL_FETCHFIELDBYNAME:
-		sv_mysql_fetchfieldbyName( VMA(1), VMA(2), args[3] );
+	case G_SQL_GETFIELDBYNAME:
+		DB_GetFieldByName( args[1], VMA(2), VMA(3), args[4] );
 		return 0;
+
+	case G_SQL_GETFIELDBYID_INT:
+		return DB_GetFieldByID_int( args[1], args[2] );
+
+	case G_SQL_GETFIELDBYNAME_INT:
+		return DB_GetFieldByName_int( args[1], VMA(2) );
 
 	case G_SQL_FIELDCOUNT:
-		return sv_mysql_fieldcount();
+		return DB_FieldCount( args[1] );
+
+	case G_SQL_CLEANSTRING:
+		DB_CleanString( VMA(1), VMA(2), args[3] );
+		return 0;
 
 	default:
 		Com_Error( ERR_DROP, "Bad game system trap: %ld", (long int) args[0] );

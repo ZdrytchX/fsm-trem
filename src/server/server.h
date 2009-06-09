@@ -26,6 +26,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "../qcommon/qcommon.h"
 #include "../game/g_public.h"
 #include "../game/bg_public.h"
+#include "../database/database.h"
 
 //=============================================================================
 
@@ -318,15 +319,15 @@ void SV_MasterGameStat( const char *data );
 //
 void sv_mysql_init( void );
 void sv_mysql_shutdown( void );
-qboolean sv_mysql_runquery( char *query );
-void sv_mysql_finishquery( void );
+int sv_mysql_runquery( char *query );
+void sv_mysql_finishquery( int id );
 void sv_mysql_cleanstring( const char *in, char *out, int len );
-qboolean sv_mysql_fetchrow( void );
-int sv_mysql_rowcount( void );
+qboolean sv_mysql_fetchrow( int id );
+int sv_mysql_rowcount( int id );
 int sv_mysql_affectedrows( void );
-void sv_mysql_fetchfieldbyID( int id, char *buffer, int len );
-void sv_mysql_fetchfieldbyName( const char *name, char *buffer, int len );
-int sv_mysql_fieldcount( void );
+void sv_mysql_fetchfieldbyID( int id, int fieldid, char *buffer, int len );
+void sv_mysql_fetchfieldbyName( int id, const char *name, char *buffer, int len );
+int sv_mysql_fieldcount( int id );
 
 
 //
