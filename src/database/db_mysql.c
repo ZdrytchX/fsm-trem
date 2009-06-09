@@ -77,6 +77,17 @@ void db_MySQL_DBStatus( void ) {
 }
 
 void db_MySQL_Disconnect( void ) {
+  int i;
+
+  //clear all results
+  for( i = 0; i < MAX_QUERYS_RESULTS; i++ ) {
+    if( querylist[ i ].results ) {
+      mysql_free_result( querylist[ i ].results );
+      querylist[ i ].results = NULL;
+      Com_DPrintf( "DEV: MySQL Freeing query ID %i.\n", i );
+    }
+  }
+
   mysql_close( connection );
   Com_Printf( "MySQL Unloaded.\n" );
 }
