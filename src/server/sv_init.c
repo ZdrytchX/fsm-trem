@@ -496,6 +496,9 @@ void SV_SpawnServer( char *server, qboolean killBots ) {
 	// to load during actual gameplay
 	sv.state = SS_LOADING;
 
+	//connect to sql
+	DB_Init();
+
 	// load and spawn all other entities
 	SV_InitGameProgs();
 
@@ -596,8 +599,6 @@ void SV_SpawnServer( char *server, qboolean killBots ) {
 			server ) );
 	}
 
-	//connect to sql
-        DB_Init();
 }
 
 /*

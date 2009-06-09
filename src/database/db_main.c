@@ -59,7 +59,7 @@ void DB_Init( void ) {
   } else {
     if( strstr( db_backend->string, "MySQL" ) ) {
       started = db_MySQL_Init( &dbi );
-    } else if( strstr( db_backend->string, "ProstegreSQL" ) ) {
+    } else if( strstr( db_backend->string, "PgSQL" ) ) {
       started = qfalse;
     } else {
       Cvar_Set( "db_enable", "0" );
@@ -79,7 +79,8 @@ void DB_Init( void ) {
     dbi.DBConnect();
     Cvar_Set( "db_status", "1" );
   }
-
+  
+  Com_Printf( "Database connected.\n\tDatabase backend: %s\n\tDatabase Address: %s\n\tDatabase: %s\n", db_backend->string, db_address->string, db_database->string );
 
   Com_Printf( "-----------------------------------\n" );
 }

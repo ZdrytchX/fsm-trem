@@ -87,17 +87,18 @@ void db_MySQL_Disconnect( void ) {
 
 int db_MySQL_RunQuery( const char *query ) {
   int queryid;
-
-  if( mysql_query( connection, query ) ) {
-    Com_Printf( "WARNING: MySQL Query failed: %s\n", mysql_error( connection ) );
-    return -1;
-  }
-
-  queryid = db_MySQL_GetFreeQueryID();
-  if( queryid >= 0 ) {
-    querylist[ queryid ].results = mysql_store_result( connection );
-    Com_DPrintf( "DEV: MySQL using query ID %i.\n", queryid );
-    return queryid;
+  if( connection ) {
+    if( mysql_query( connection, query ) ) {
+      Com_Printf( "WARNING: MySQL Query failed: %s\n", mysql_error( connection ) );
+      return -1;
+    }
+  
+    queryid = db_MySQL_GetFreeQueryID();
+    if( queryid >= 0 ) {
+      querylist[ queryid ].results = mysql_store_result( connection );
+      Com_DPrintf( "DEV: MySQL using query ID %i.\n", queryid );
+      return queryid;
+    }
   }
   return -1;
 }
