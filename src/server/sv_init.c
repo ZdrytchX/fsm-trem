@@ -660,7 +660,6 @@ void SV_Init (void) {
 	sv_demoState = Cvar_Get ("sv_demoState", "0", CVAR_ROM );
 	sv_autoDemo = Cvar_Get ("sv_autoDemo", "0", CVAR_ARCHIVE );
 	
-	sv_minclPing = Cvar_Get ("sv_minclPing", "0", CVAR_ARCHIVE );
 }
 
 
