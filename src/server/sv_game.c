@@ -262,7 +262,7 @@ void SV_LocateGameData( sharedEntity_t *gEnts, int numGEntities, int sizeofGEnti
 					   playerState_t *clients, int sizeofGameClient ) {
 	sv.gentities = gEnts;
 	sv.gentitySize = sizeofGEntity_t;
-	if ( sv.num_entities < numGEntities ) sv.num_entities = numGEntities;
+	sv.num_entities = numGEntities;
 
 	sv.gameClients = clients;
 	sv.gameClientSize = sizeofGameClient;
@@ -384,7 +384,7 @@ intptr_t SV_GameSystemCalls( intptr_t *args ) {
 		return SV_inPVSIgnorePortals( VMA(1), VMA(2) );
 
 	case G_SET_CONFIGSTRING:
-		SV_SetConfigstring( args[1], VMA(2), qfalse );
+		SV_SetConfigstring( args[1], VMA(2) );
 		return 0;
 	case G_GET_CONFIGSTRING:
 		SV_GetConfigstring( args[1], VMA(2), args[3] );
@@ -428,16 +428,6 @@ intptr_t SV_GameSystemCalls( intptr_t *args ) {
 
 	case G_SEND_GAMESTAT:
 		SV_MasterGameStat( VMA(1) );
-		return 0;
-
-	case G_DEMO_COMMAND:
-		if ( sv.demoState == DS_RECORDING )
-		{
-			if ( args[1] == -1 )
-				SV_DemoWriteServerCommand( VMA(2) );
-			else
-				SV_DemoWriteGameCommand( args[1], VMA(2) );
-		}
 		return 0;
 
 	//====================================

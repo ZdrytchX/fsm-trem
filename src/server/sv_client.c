@@ -224,10 +224,10 @@ void SV_DirectConnect( netadr_t from ) {
 	// check for privateClient password
 	password = Info_ValueForKey( userinfo, "password" );
 	if ( !strcmp( password, sv_privatePassword->string ) ) {
-		startIndex = sv_democlients->integer;
+		startIndex = 0;
 	} else {
 		// skip past the reserved slots
-		startIndex = sv_privateClients->integer + sv_democlients->integer;
+		startIndex = sv_privateClients->integer;
 	}
 
 	newcl = NULL;

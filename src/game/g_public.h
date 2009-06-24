@@ -220,8 +220,7 @@ typedef enum {
   G_PARSE_READ_TOKEN,
   G_PARSE_SOURCE_FILE_AND_LINE,
 
-  G_SEND_GAMESTAT,
-  G_DEMO_COMMAND
+  G_SEND_GAMESTAT
 } gameImport_t;
 
 
@@ -252,12 +251,10 @@ typedef enum {
 
   GAME_RUN_FRAME,         // ( int levelTime );
 
-  GAME_CONSOLE_COMMAND,      // ( void );
+  GAME_CONSOLE_COMMAND      // ( void );
   // ConsoleCommand will be called when a command has been issued
   // that is not recognized as a builtin function.
   // The game can issue trap_argc() / trap_argv() commands to get the command
   // and parameters.  Return qfalse if the game doesn't recognize it as a command.
-
-  GAME_DEMO_COMMAND         // ( int cmd, const char *string );
 } gameExport_t;
 
